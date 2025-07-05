@@ -1,0 +1,7 @@
+accelerate
+transformers
+diffusers[training]
+datasets
+peft
+Pillow
+torch
