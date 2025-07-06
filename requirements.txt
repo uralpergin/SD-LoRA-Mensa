@@ -1,7 +1,16 @@
-accelerate
-transformers
-diffusers[training]
-datasets
-peft
-Pillow
-torch
+# Core packages
+transformers>=4.36.0
+diffusers[training]>=0.25.0
+peft>=0.7.1
+accelerate>=0.25.0
+datasets>=2.18.0
+Pillow>=10.0.0
+torch>=2.1.0
+pandas>=2.2.0
+
+# GPU memory optimization
+xformers
+
+# Optional: for training monitoring
+tensorboard
+wandb
