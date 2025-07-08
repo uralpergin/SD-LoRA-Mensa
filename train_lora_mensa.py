@@ -5,6 +5,8 @@ from datasets import Dataset
 from PIL import Image
 import pandas as pd
 import os
+# More libraries may be needed for GPU utilization and efficieny 
+# Accelarate, Xformers, wandb, etc.
 
 #THE ORIGINAL LORA TRAINING SCRIPT FOR POKEMON DATASET SAYAKPAUL:
 # https://github.com/huggingface/diffusers/blob/main/examples/text_to_image/train_text_to_image_lora.py
