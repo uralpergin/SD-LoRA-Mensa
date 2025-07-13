@@ -41,6 +41,9 @@ source /etc/cuda_env
 cuda12.6
 echo "[CUDA] CUDA_HOME: $CUDA_HOME"
 
+echo "[DEPS] Installing remaining dependencies for LoRA training..."
+pip3 install --user peft accelerate datasets
+
 echo "[TRAIN] Starting LoRA training..."
 cd /work/dlclarge2/ceylanb-DL_Lab_Project/mensa-lora
 
