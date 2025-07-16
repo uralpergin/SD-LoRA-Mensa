@@ -3,7 +3,7 @@
 #SBATCH --partition=dllabdlc_gpu-rtx2080
 #SBATCH --gres=gpu:1
 #SBATCH --mem=10G
-#SBATCH --time=01:30:00
+#SBATCH --time=02:30:00
 
 echo "============================================================"
 echo "              MENSA LORA TRAINING JOB"
@@ -36,7 +36,11 @@ mkdir -p logs
 echo "[GPU] GPU Information:"
 nvidia-smi
 
+echo "[GPU] Checking GPU stability..."
+nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits
+
 echo "[CUDA] Setting up CUDA environment..."
+export CUDA_LAUNCH_BLOCKING=1
 source /etc/cuda_env
 cuda12.6
 echo "[CUDA] CUDA_HOME: $CUDA_HOME"
@@ -51,33 +55,41 @@ cd /work/dlclarge2/ceylanb-DL_Lab_Project/mensa-lora
 python3 train_lora_enhanced.py \
     --dataset_csv ./dataset/dataset.csv \
     --experiment_name "$EXPERIMENT_NAME" \
-    --epochs 8 \
-    --batch_size 1 \
+    --epochs 15 \
+    --batch_size 2 \
     --learning_rate 5e-5 \
-    --lora_r 4 \
-    --lora_alpha 16 \
-    --save_steps 4
+    --lora_r 32 \
+    --lora_alpha 128 \
+    --save_steps 3 \
+    --cfg_weight 0.3
 
-echo "[✓] Training complete!"
+echo "[OK] Training complete!"
 
 # Test inference with both dishes (with error handling)
 echo "[INFER] Starting inference tests..."
 
+echo "[INFER] Generating Currywurst image..."
 python3 infer_enhanced.py \
     --experiment_name "$EXPERIMENT_NAME" \
-    --prompt "currywurst german sausage with french fries on plate in cafeteria tray" \
-    --steps 25 \
-    --seed 42 || echo "[!] Inference 1 failed, continuing..."
+    --prompt "Currywurst oder planted Currywurst Pommes frites" \
+    --steps 50 || echo "[!] Currywurst inference failed, continuing..."
 
+echo "[INFER] Generating Pasta image..."
 python3 infer_enhanced.py \
     --experiment_name "$EXPERIMENT_NAME" \
-    --prompt "pasta dish with sauce and toppings on plate in cafeteria tray" \
-    --steps 25 \
-    --seed 42 || echo "[!] Inference 2 failed, continuing..."
+    --prompt "Pasta-Kreationen aus unserer eigenen Pasta-Manufaktur mit verschiedenen Saucen und Toppings" \
+    --steps 50 || echo "[!] Pasta inference failed, continuing..."
 
-echo "[✓] Inference complete!"
+echo "[OK] Inference complete!"
+
+# Run FID evaluation directly with the conda environment
+echo "[EVAL] Running FID evaluation..."
+chmod +x ./calculate_fid.sh
+# Pass the current environment to the evaluation script
+./calculate_fid.sh "$EXPERIMENT_NAME" || echo "[!] FID calculation failed, continuing..."
 
 echo "============================================================"
 echo "[RESULT] Generated images in ./experiments/$EXPERIMENT_NAME/outputs/"
 echo "[RESULT] LoRA weights in ./experiments/$EXPERIMENT_NAME/lora_weights/"
+echo "[RESULT] FID results in ./experiments/$EXPERIMENT_NAME/fid_results.txt"
 echo "============================================================"

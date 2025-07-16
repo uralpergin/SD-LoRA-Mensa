@@ -27,8 +27,15 @@ def setup_memory_optimization():
         torch.cuda.empty_cache() # Clear cache
         torch.backends.cuda.matmul.allow_tf32 = True # Efficent matrix multiplication
         torch.backends.cudnn.allow_tf32 = True # Faster convolutions
-        print(f"[INFO] CUDA Device: {torch.cuda.get_device_name()}")
-        print(f"[INFO] Available VRAM: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB")
+        
+        # VRAM info
+        device_name = torch.cuda.get_device_name()
+        total_memory = torch.cuda.get_device_properties(0).total_memory / 1024**3
+        used_memory = torch.cuda.memory_reserved() / 1024**3
+        
+        print(f"[INFO] CUDA Device: {device_name}")
+        print(f"[INFO] Total VRAM: {total_memory:.1f} GB")
+        print(f"[VRAM] Currently used: {used_memory:.2f} GB")
 
 def load_from_csv(csv_path):
     """
@@ -47,31 +54,51 @@ def load_from_csv(csv_path):
     for idx, row in df.iterrows():
         image_path = row["image_path"]
         
-        # Check if image exists
+        # Handle relative paths in the dataset with a simpler approach
+        # All paths in the CSV are now stored as relative paths from mensa-lora root
+        # We just need to check if the path exists or needs the prefix
+        if not os.path.exists(image_path):
+            # Try with project root directory
+            current_dir = os.path.dirname(os.path.abspath(__file__))  # Gets mensa-lora directory
+            full_path = os.path.join(current_dir, image_path)
+            if os.path.exists(full_path):
+                image_path = full_path
+        
+        # Final check if image exists
         if not os.path.exists(image_path):
             print(f"[x] Image not found: {image_path}")
+            print(f"    Tried absolute path: {image_path}")
+            print(f"    Tried with project root: {full_path}")
             missing_count += 1
             continue
-
-        # Test to see if english text works better.
+        
         description = row["description"]
         
-        if "Currywurst" in description: # for testing
-            prompt = "currywurst german sausage with french fries on plate in cafeteria tray"
-        elif "Pasta" in description: # for testing
-            prompt = "pasta dish with sauce and toppings on plate in cafeteria tray"
-        else:
-            prompt = row["description"]  # original german description
-        #print(prompt)
+        # Generic prompt template
+        # TODO: Side dish case can be seperated based on side dish and the word can be given as variable
+        base_prompt = "A mensa meal, {food_description} served on a white plate, placed on a grey tray, realistic photo, centered, high-angle view, outdoors, bright lighting, wide angle, high resolution"
+        
+        prompt = base_prompt.format(food_description=description)
+        #prompt = description
+        # Define negative prompt (what we DON'T want)
+        negative_prompt = "blurry, low quality, distorted, bad lighting, dark, grainy, pixelated, deformed, messy, scattered, utensils, cutlery, fork, knife, spoon, napkin, hand, person, text, out of frame, unappetizing, overexposed, underexposed, noise, artifacts, watermark"
+        #negative_prompt = ""
+        #print(f"Positive: {prompt}")
+        #print(f"Negative: {negative_prompt}")
         
         try:
+            print(f"[LOAD] Attempting to load: {image_path}")
             image = Image.open(image_path).convert("RGB")
-            samples.append({"image": image, "label": prompt})
+            samples.append({
+                "image": image, 
+                "label": prompt,
+                "negative_label": negative_prompt
+            })
         except Exception as e:
             print(f"[x] Failed to load image {image_path}: {e}")
             missing_count += 1
 
-    print(f"[✓] Loaded {len(samples)} images successfully")
+    print(f"[OK] Loaded {len(samples)} images successfully")
     if missing_count > 0:
         print(f"[!] {missing_count} images were missing or failed to load")
     
@@ -79,13 +106,13 @@ def load_from_csv(csv_path):
 
 def tokenize_and_transform(sample, tokenizer, resolution):
     """
-    Tokenize text and transform images
-    sample: Dictionary with 'image' and 'text' keys
+    Tokenize text and transform images with both positive and negative prompts
+    sample: Dictionary with 'image', 'label', and 'negative_label' keys
     tokenizer: CLIPTokenizer instance
     resolution: Image resolution for training
     """
-    # Tokenize text
-    encoding = tokenizer(
+    # Tokenize positive prompt (what we want)
+    positive_encoding = tokenizer(
         sample["label"], # meal label 
         padding="max_length", # pad each text to max length
         truncation=True, # if the text is to long cut off
@@ -93,7 +120,17 @@ def tokenize_and_transform(sample, tokenizer, resolution):
         return_tensors="pt", # return PyTorch tensors
     )
     
-    sample["input_ids"] = encoding["input_ids"].squeeze(0) # Tokenized text
+    # Tokenize negative prompt (what we don't want)
+    negative_encoding = tokenizer(
+        sample["negative_label"], # negative prompts
+        padding="max_length",
+        truncation=True,
+        max_length=tokenizer.model_max_length,
+        return_tensors="pt",
+    )
+    
+    sample["input_ids"] = positive_encoding["input_ids"].squeeze(0) # Positive tokenized text
+    sample["negative_input_ids"] = negative_encoding["input_ids"].squeeze(0) # Negative tokenized text
     
     # Transform image
     transform = transforms.Compose([
@@ -123,22 +160,24 @@ def main():
                        help='Pretrained Stable Diffusion model')
     parser.add_argument('--resolution', type=int, default=512, 
                        help='Training resolution')
-    parser.add_argument('--batch_size', type=int, default=1, 
-                       help='Training batch size') # Keep at 1 for 12GB GPU
-    parser.add_argument('--epochs', type=int, default=8, 
+    parser.add_argument('--batch_size', type=int, default=2, 
+                       help='Training batch size') # Increased to 2 per supervisor suggestion
+    parser.add_argument('--epochs', type=int, default=15, 
                        help='Number of training epochs')
     parser.add_argument('--learning_rate', type=float, default=5e-5, 
-                       help='Learning rate')
+                       help='Learning rate - increased for stronger adaptation')
     # LoRA Rank:
     # Larger values allow more adaptation (capacity of the adaptation increase) but require more VRAM
-    parser.add_argument('--lora_r', type=int, default=4, 
-                       help='LoRA rank') 
+    parser.add_argument('--lora_r', type=int, default=32, 
+                       help='LoRA rank - increased from 16 to 32 for much stronger adaptation') 
     # LoRA Alpha:
     # Larger values increase adaptation strength (output affects from tuning more) but require more VRAM
-    parser.add_argument('--lora_alpha', type=int, default=16, 
-                       help='LoRA alpha')
-    parser.add_argument('--save_steps', type=int, default=4, 
+    parser.add_argument('--lora_alpha', type=int, default=128, 
+                       help='LoRA alpha - increased from 64 to 128 for maximum effect')
+    parser.add_argument('--save_steps', type=int, default=3, 
                        help='Save model every N epochs')
+    parser.add_argument('--cfg_weight', type=float, default=0.3, 
+                       help='Classifier-Free Guidance weight (0.0 = no CFG, 0.1 = light CFG, 0.3 = strong CFG)')
     
     args = parser.parse_args()
     
@@ -149,8 +188,11 @@ def main():
     experiment_dir = f"./experiments/{args.experiment_name}"
     lora_output_dir = f"{experiment_dir}/lora_weights"
     
-    # Setup accelerator
-    accelerator = Accelerator(gradient_accumulation_steps=2)
+    # Setup accelerator with mixed precision
+    accelerator = Accelerator(
+        gradient_accumulation_steps=4,  # Increased from 2 to 4 to handle larger batch size
+        mixed_precision="fp16"  # Use mixed precision for memory efficiency
+    )
     device = accelerator.device
     
     print("=" * 60)
@@ -179,6 +221,7 @@ def main():
         'learning_rate': args.learning_rate,
         'lora_r': args.lora_r,
         'lora_alpha': args.lora_alpha,
+        'cfg_weight': args.cfg_weight,
         'device': str(device)
     }
     save_training_config(lora_output_dir, training_config)
@@ -190,6 +233,10 @@ def main():
     vae = AutoencoderKL.from_pretrained(args.pretrained_model, subfolder="vae").to(device)
     unet = UNet2DConditionModel.from_pretrained(args.pretrained_model, subfolder="unet").to(device)
     noise_scheduler = DDPMScheduler.from_pretrained(args.pretrained_model, subfolder="scheduler")
+    
+    # Enable gradient checkpointing for memory efficiency
+    print("[MEMORY] Enabling gradient checkpointing...")
+    unet.enable_gradient_checkpointing()
     
     # Freeze models except UNet (LoRA will be applied to UNet)
     unet.requires_grad_(False)
@@ -219,11 +266,12 @@ def main():
     
     dataset = Dataset.from_list(samples)
     dataset = dataset.map(lambda e: tokenize_and_transform(e, tokenizer, args.resolution))
-    dataset.set_format(type="torch", columns=["input_ids", "pixel_values"])
+    dataset.set_format(type="torch", columns=["input_ids", "negative_input_ids", "pixel_values"])
     
     def collate_fn(batch):
         return {
             "input_ids": torch.stack([x["input_ids"] for x in batch]),
+            "negative_input_ids": torch.stack([x["negative_input_ids"] for x in batch]),
             "pixel_values": torch.stack([x["pixel_values"] for x in batch])
         }
     
@@ -245,6 +293,11 @@ def main():
     print(f"        Steps per epoch: {len(dataloader)}")
     print(f"        Total epochs: {args.epochs}")
     print(f"        Learning rate: {args.learning_rate}")
+    print(f"        CFG weight: {args.cfg_weight}")
+    if args.cfg_weight > 0:
+        print(f"        Negative prompts: ENABLED")
+    else:
+        print(f"        Negative prompts: DISABLED")
     
     # Training loop
     print("-" * 60)
@@ -272,9 +325,21 @@ def main():
                 ).long()
                 noisy_latents = noise_scheduler.add_noise(latents, noise, timesteps)
                 
-                # Text encoding
+                # Text encoding with CFG support
                 with torch.no_grad():
-                    encoder_hidden_states = text_encoder(batch["input_ids"].to(device))[0]
+                    # Positive prompt embeddings (what we want)
+                    positive_embeddings = text_encoder(batch["input_ids"].to(device))[0]
+                    
+                    if args.cfg_weight > 0:
+                        # Negative prompt embeddings (what we don't want)
+                        negative_embeddings = text_encoder(batch["negative_input_ids"].to(device))[0]
+                        
+                        # Combine embeddings with CFG weighting
+                        # CFG formula: positive + cfg_weight * (positive - negative)
+                        encoder_hidden_states = positive_embeddings + args.cfg_weight * (positive_embeddings - negative_embeddings)
+                    else:
+                        # No CFG, use only positive embeddings
+                        encoder_hidden_states = positive_embeddings
                 
                 # UNet prediction
                 model_pred = unet(noisy_latents, timesteps, encoder_hidden_states).sample
@@ -302,10 +367,15 @@ def main():
         avg_loss = epoch_loss / len(dataloader)
         print(f"[EPOCH {epoch + 1:2d}] Complete. Average loss: {avg_loss:.4f}")
         
+        # Simple VRAM usage at end of epoch
+        if torch.cuda.is_available():
+            used_memory = torch.cuda.memory_reserved() / 1024**3
+            print(f"[VRAM] Used: {used_memory:.2f} GB")
+        
         # Save best model
         if avg_loss < best_loss:
             best_loss = avg_loss
-            print(f"[✓] New best loss! Saving model...")
+            print(f"[OK] New best loss! Saving model...")
             accelerator.wait_for_everyone()
             lora_state_dict = get_peft_model_state_dict(unet)
             torch.save(lora_state_dict, os.path.join(lora_output_dir, "pytorch_lora_weights_best.bin"))
@@ -323,7 +393,7 @@ def main():
     torch.save(lora_state_dict, os.path.join(lora_output_dir, "pytorch_lora_weights_final.bin"))
     
     print("-" * 60)
-    print("[✓] LoRA fine-tuning training complete!")
+    print("[OK] LoRA fine-tuning training complete!")
     print(f"    Experiment saved to: {experiment_dir}")
     print(f"    LoRA weights saved to: {lora_output_dir}")
     print(f"    Best loss: {best_loss:.4f}")

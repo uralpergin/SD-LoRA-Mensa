@@ -1,7 +1,7 @@
 """
-Inference Script for Mensa Food Generation
+Inference Script for Mensa Food Generation (Vanilla Stable Diffusion without LoRA)
 
-This script generates images using the fine-tuned LoRA model.
+This script generates images using only the base Stable Diffusion model without LoRA.
 """
 
 import torch
@@ -12,8 +12,8 @@ import os
 import json
 from datetime import datetime
 
-def generate_image(food_description, lora_weights_path, output_path, num_inference_steps=50, guidance_scale=7.5, seed=None):
-    """Generate image from prompt using LoRA weights"""
+def generate_image(food_description, output_path, num_inference_steps=50, guidance_scale=7.5, seed=None):
+    """Generate image from prompt using vanilla Stable Diffusion without LoRA"""
     print("[GEN] Image Generation Starts")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[INFO] Using device: {device}")
@@ -36,45 +36,7 @@ def generate_image(food_description, lora_weights_path, output_path, num_inferen
         requires_safety_checker=False
     ).to(device)
     
-    # Load LoRA weights
-    if os.path.isfile(lora_weights_path):
-        # Single file
-        weights_file = lora_weights_path
-    elif os.path.isdir(lora_weights_path):
-        # Directory
-        best_weights = os.path.join(lora_weights_path, "pytorch_lora_weights_best.bin")
-        final_weights = os.path.join(lora_weights_path, "pytorch_lora_weights_final.bin")
-        regular_weights = os.path.join(lora_weights_path, "pytorch_lora_weights.bin")
-        
-        if os.path.exists(best_weights):
-            weights_file = best_weights
-            print("[LORA] Using best model weights")
-        elif os.path.exists(final_weights):
-            weights_file = final_weights
-            print("[LORA] Using final model weights")
-        elif os.path.exists(regular_weights):
-            weights_file = regular_weights
-            print("[LORA] Using regular model weights")
-        else:
-            raise FileNotFoundError(f"No LoRA weights found in {lora_weights_path}")
-    else:
-        raise FileNotFoundError(f"LoRA weights not found: {lora_weights_path}")
-    
-    print(f"[LOAD] Loading LoRA weights: {weights_file}")
-    
-    # Load LoRA weights
-    try:
-        pipe.load_lora_weights(os.path.dirname(weights_file), weight_name=os.path.basename(weights_file))
-        print("[OK] LoRA weights loaded (new method)")
-    except Exception as e1:
-        try:
-            pipe.unet.load_attn_procs(weights_file)
-            print("[OK] LoRA weights loaded (old method)")
-        except Exception as e2:
-            print(f"[x] Error loading LoRA weights:")
-            print(f"    Method 1 error: {e1}")
-            print(f"    Method 2 error: {e2}")
-            raise RuntimeError("Cannot load LoRA weights...")
+    print("[INFO] Using vanilla Stable Diffusion without LoRA")
     
     # Enable memory efficient attention if available
     try:
@@ -83,13 +45,14 @@ def generate_image(food_description, lora_weights_path, output_path, num_inferen
         print("[OPT] Memory optimizations enabled")
     except:
         print("[!] Memory optimizations not available")
+    
     # Prepare prompt
     base_prompt = "A mensa meal, {food_description} served on a white plate, placed on a grey tray, realistic photo, centered, high-angle view, outdoors, bright lighting, wide angle, high resolution"
     prompt = base_prompt.format(food_description=food_description)
-    #prompt = food_description
+    
     # Negative prompt same as training
     negative_prompt = "blurry, low quality, distorted, bad lighting, dark, grainy, pixelated, deformed, messy, scattered, utensils, cutlery, fork, knife, spoon, napkin, hand, person, text, out of frame, unappetizing, overexposed, underexposed, noise, artifacts, watermark"
-    #negative_prompt = ""
+    
     print(f"[PROMPT] Positive: {prompt}")
 
     print(f"[GEN] Generating image...")
@@ -98,7 +61,7 @@ def generate_image(food_description, lora_weights_path, output_path, num_inferen
     with torch.autocast("cuda") if torch.cuda.is_available() else torch.no_grad():
         image = pipe(
             prompt, 
-            negative_prompt=negative_prompt,  # Added negative prompt
+            negative_prompt=negative_prompt,
             num_inference_steps=num_inference_steps,
             guidance_scale=guidance_scale,
             height=512,
@@ -115,14 +78,14 @@ def generate_image(food_description, lora_weights_path, output_path, num_inferen
     
     # Save image
     image.save(output_path)
-    print(f"[✓] Image saved to: {output_path}")
+    print(f"[OK] Image saved to: {output_path}")
     
     # Save generation metadata
     metadata = {
         'timestamp': datetime.now().isoformat(),
         'prompt': prompt,
-        'negative_prompt': negative_prompt,  # Added negative prompt to metadata
-        'lora_weights': weights_file,
+        'negative_prompt': negative_prompt,
+        'model': 'CompVis/stable-diffusion-v1-4 (without LoRA)',
         'num_inference_steps': num_inference_steps,
         'guidance_scale': guidance_scale,
         'seed': seed,
@@ -136,15 +99,10 @@ def generate_image(food_description, lora_weights_path, output_path, num_inferen
     return image
 
 def main():
-    parser = argparse.ArgumentParser(description='Generate Mensa food images using LoRA')
+    parser = argparse.ArgumentParser(description='Generate Mensa food images using vanilla Stable Diffusion')
     parser.add_argument('--prompt', required=True, help='Text prompt for image generation')
-    parser.add_argument('--experiment_name', default="experiment_default",
-                       help='Experiment name (default: experiment_default)')
     parser.add_argument('--steps', type=int, default=50, 
                        help='Number of inference steps (using default 50 for best quality)')
-    # Guidance scale:
-    # Larger values force model to follow prompt more closely (unnatural images)
-    # Lower values allow more creativity but may diverge from prompt (more natural images)
     parser.add_argument('--guidance', type=float, default=7.5, 
                        help='Guidance scale')
     parser.add_argument('--seed', type=int, default=None, 
@@ -154,27 +112,20 @@ def main():
     
     args = parser.parse_args()
     
-    # Record the results of inference to created experiment directory during training
-    experiment_dir = f"./experiments/{args.experiment_name}"
-    lora_weights_path = f"{experiment_dir}/lora_weights"
-    
-    if not os.path.exists(lora_weights_path):
-        print(f"[x] Experiment not found: {args.experiment_name}")
-        print(f"    Expected path: {lora_weights_path}")
-        return 1
+    # Use a dedicated directory for vanilla SD results
+    experiment_dir = "./experiments/onlyStableDiffusion"
     
     # Output directory for generated images
     os.makedirs(f"{experiment_dir}/outputs", exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S") # Added if we want to run experiment with different prompts or seeds
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     safe_prompt = "".join(c for c in args.prompt[:30] if c.isalnum() or c in (' ', '-', '_')).rstrip()
     safe_prompt = safe_prompt.replace(' ', '_')
     output_path = f"{experiment_dir}/outputs/{safe_prompt}_{timestamp}.png"
     
     print("=" * 60)
-    print("         MENSA FOOD IMAGE GENERATION")
+    print("         MENSA FOOD IMAGE GENERATION (VANILLA SD)")
     print("=" * 60)
-    print(f"[INIT] Experiment: {args.experiment_name}")
-    print(f"[INIT] LoRA weights: {lora_weights_path}")
+    print(f"[INIT] Model: CompVis/stable-diffusion-v1-4 (without LoRA)")
     print(f"[INIT] Output: {output_path}")
     print("-" * 60)
     
@@ -191,7 +142,6 @@ def main():
         try:
             image = generate_image(
                 food_description=args.prompt,
-                lora_weights_path=lora_weights_path,
                 output_path=current_output,
                 num_inference_steps=args.steps,
                 guidance_scale=args.guidance,
@@ -199,14 +149,14 @@ def main():
             )
             
             if args.num_images > 1:
-                print(f"[✓] Generated image {i+1}/{args.num_images}")
+                print(f"[OK] Generated image {i+1}/{args.num_images}")
             
         except Exception as e:
             print(f"[x] Error generating image: {e}")
             return 1
     
     print("-" * 60)
-    print("[✓] Mensa Food Image Generation Completed")
+    print("[OK] Mensa Food Image Generation Completed")
     print("=" * 60)
     return 0
 
