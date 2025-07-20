@@ -47,11 +47,11 @@ def generate_image(food_description, output_path, num_inference_steps=50, guidan
         print("[!] Memory optimizations not available")
     
     # Prepare prompt
-    base_prompt = "A mensa meal, {food_description} served on a white plate, placed on a grey tray, realistic photo, centered, high-angle view, outdoors, bright lighting, wide angle, high resolution"
+    base_prompt = "{food_description} on a white plate, placed on a grey tray"
     prompt = base_prompt.format(food_description=food_description)
     
     # Negative prompt same as training
-    negative_prompt = "blurry, low quality, distorted, bad lighting, dark, grainy, pixelated, deformed, messy, scattered, utensils, cutlery, fork, knife, spoon, napkin, hand, person, text, out of frame, unappetizing, overexposed, underexposed, noise, artifacts, watermark"
+    negative_prompt = "fork, knife, spoon, napkin, text, watermark, person, hand"
     
     print(f"[PROMPT] Positive: {prompt}")
 
