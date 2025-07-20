@@ -6,6 +6,7 @@ dataset/images/
 # Experiment outputs
 experiments/*/outputs/
 experiments/*/lora_weights/
+experiments/
 
 # Log files
 logs/

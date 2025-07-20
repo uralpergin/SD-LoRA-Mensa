@@ -26,9 +26,6 @@ echo "[EXP] Experiment: $EXPERIMENT_NAME"
 echo "[LOG] Logs directory: ${LOG_DIR}/"
 echo "[OUT] Output log: ${LOG_DIR}/train_${SLURM_JOB_ID}.out"
 echo "[ERR] Error log: ${LOG_DIR}/train_${SLURM_JOB_ID}.err"
-echo "Logs directory: ${LOG_DIR}/"
-echo "Output log: ${LOG_DIR}/train_${SLURM_JOB_ID}.out"
-echo "Error log: ${LOG_DIR}/train_${SLURM_JOB_ID}.err"
 
 # Create directories
 mkdir -p logs
@@ -40,13 +37,17 @@ echo "[GPU] Checking GPU stability..."
 nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits
 
 echo "[CUDA] Setting up CUDA environment..."
-export CUDA_LAUNCH_BLOCKING=1
+export CUDA_LAUNCH_BLOCKING=1 # To see CUDA errors, delete for full power
 source /etc/cuda_env
 cuda12.6
 echo "[CUDA] CUDA_HOME: $CUDA_HOME"
 
 echo "[DEPS] Installing remaining dependencies for LoRA training..."
-pip3 install --user peft accelerate datasets
+# Silence pip
+export PIP_DISABLE_PIP_VERSION_CHECK=1
+pip3 install --user --disable-pip-version-check --quiet peft accelerate datasets \
+  > /dev/null 2>&1
+
 
 echo "[TRAIN] Starting LoRA training..."
 cd /work/dlclarge2/ceylanb-DL_Lab_Project/mensa-lora
@@ -55,17 +56,17 @@ cd /work/dlclarge2/ceylanb-DL_Lab_Project/mensa-lora
 python3 train_lora_enhanced.py \
     --dataset_csv ./dataset/dataset.csv \
     --experiment_name "$EXPERIMENT_NAME" \
-    --epochs 15 \
-    --batch_size 2 \
-    --learning_rate 5e-5 \
-    --lora_r 32 \
-    --lora_alpha 128 \
+    --epochs 1 \
+    --batch_size 6 \
+    --learning_rate 1e-4 \
+    --lora_r 8 \
+    --lora_alpha 32 \
     --save_steps 3 \
-    --cfg_weight 0.3
+    --concept_token "<mensafood>"
 
 echo "[OK] Training complete!"
 
-# Test inference with both dishes (with error handling)
+# Inference
 echo "[INFER] Starting inference tests..."
 
 echo "[INFER] Generating Currywurst image..."
@@ -74,18 +75,18 @@ python3 infer_enhanced.py \
     --prompt "Currywurst oder planted Currywurst Pommes frites" \
     --steps 50 || echo "[!] Currywurst inference failed, continuing..."
 
-echo "[INFER] Generating Pasta image..."
+echo "[INFER] Generating Cordon Bleu image..."
 python3 infer_enhanced.py \
     --experiment_name "$EXPERIMENT_NAME" \
-    --prompt "Pasta-Kreationen aus unserer eigenen Pasta-Manufaktur mit verschiedenen Saucen und Toppings" \
-    --steps 50 || echo "[!] Pasta inference failed, continuing..."
+    --prompt "Cordon Bleu Vom Schwein Zitronenjus Kartoffelbrei Karotten Erbsengemuse" \
+    --steps 50 || echo "[!] Cordon Bleu inference failed, continuing..."
 
 echo "[OK] Inference complete!"
 
-# Run FID evaluation directly with the conda environment
+# FID test
 echo "[EVAL] Running FID evaluation..."
 chmod +x ./calculate_fid.sh
-# Pass the current environment to the evaluation script
+
 ./calculate_fid.sh "$EXPERIMENT_NAME" || echo "[!] FID calculation failed, continuing..."
 
 echo "============================================================"
