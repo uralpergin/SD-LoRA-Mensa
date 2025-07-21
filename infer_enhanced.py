@@ -124,7 +124,75 @@ def load_pipeline_with_lora(lora_weights_path, concept_token="<mensafood>"):
             # Load the saved PEFT state with error handling
             try:
                 peft_state = torch.load(text_lora_path / "adapter_model.bin", map_location=device)
+                
+                # Debug: Print state dict keys to verify alignment
+                print("[DEBUG] First 5 keys in saved state dict:")
+                for idx, key in enumerate(list(peft_state.keys())[:5]):
+                    print(f"  - {key}")
+                
+                # Debug: Print model keys to compare with state dict
+                print("[DEBUG] First 5 LoRA keys in model:")
+                lora_keys = [name for name, _ in pipe.text_encoder.named_parameters() if "lora_" in name]
+                for idx, key in enumerate(lora_keys[:5]):
+                    print(f"  - {key}")
+                
+                # Calculate key matching stats
+                matching_keys = 0
+                missing_keys = []
+                for key in peft_state.keys():
+                    if key in dict(pipe.text_encoder.named_parameters()):
+                        matching_keys += 1
+                    else:
+                        missing_keys.append(key)
+                
+                print(f"[DEBUG] Keys match statistics: {matching_keys}/{len(peft_state)} keys matched")
+                if missing_keys:
+                    print(f"[DEBUG] First 3 missing keys: {missing_keys[:3]}")
+                    
+                # Load state dict with strict=False to avoid errors
                 pipe.text_encoder.load_state_dict(peft_state, strict=False)
+                
+                # Verify weights were actually loaded by checking a few parameters
+                print("[DEBUG] Verifying weights were loaded:")
+                sample_loaded = False
+                for name, param in pipe.text_encoder.named_parameters():
+                    if "lora_" in name and param.requires_grad:
+                        print(f"  - {name}: mean={param.data.mean().item():.6f}, std={param.data.std().item():.6f}")
+                        print(f"    non-zero values: {(param.data != 0).sum().item()}/{param.data.numel()}")
+                        sample_loaded = True
+                        break  # Just show one sample
+                
+                # Load and compare with saved stats if available
+                stats_path = text_lora_path / "adapter_stats.json"
+                if stats_path.exists():
+                    try:
+                        with open(stats_path, 'r') as f:
+                            saved_stats = json.load(f)
+                        print("[DEBUG] Comparing with saved stats from training:")
+                        matches = 0
+                        for name, param in pipe.text_encoder.named_parameters():
+                            if "lora_" in name and name in saved_stats:
+                                saved_mean = saved_stats[name]["mean"]
+                                current_mean = param.data.mean().item()
+                                saved_nonzero = saved_stats[name]["non_zero"]
+                                current_nonzero = (param.data != 0).sum().item()
+                                
+                                mean_diff = abs(float(saved_mean) - current_mean)
+                                nonzero_diff = abs(int(saved_nonzero) - current_nonzero)
+                                
+                                if mean_diff < 1e-5 and nonzero_diff == 0:
+                                    matches += 1
+                                
+                                if matches < 3:  # Only show first few for brevity
+                                    print(f"  - {name}: mean diff={mean_diff:.8f}, nonzero diff={nonzero_diff}")
+                        
+                        print(f"[DEBUG] Stats match verification: {matches}/{len([n for n, _ in pipe.text_encoder.named_parameters() if 'lora_' in n])}")
+                    except Exception as e:
+                        print(f"[DEBUG] Error comparing stats: {e}")
+                
+                if not sample_loaded:
+                    print("[WARN] Could not find any LoRA parameters in the model!")
+                
                 print("[LORA] ✓ Text Encoder LoRA weights loaded successfully (PEFT)")
             except Exception as e:
                 print(f"[ERROR] Failed to load Text Encoder LoRA weights: {e}")

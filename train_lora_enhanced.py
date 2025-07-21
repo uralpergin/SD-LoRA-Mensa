@@ -146,8 +146,32 @@ def save_lora_and_embedding(output_dir, unet, text_encoder, tokenizer, concept_t
     os.makedirs(text_dir, exist_ok=True)
     
     text_encoder_state_dict = get_peft_model_state_dict(text_encoder)
+    
+    # Debug: Print information about the text encoder LoRA state dictionary
+    print("[DEBUG] Text Encoder LoRA state dict structure:")
+    print(f"  - Total keys: {len(text_encoder_state_dict)}")
+    print("  - First 5 keys:")
+    for idx, key in enumerate(list(text_encoder_state_dict.keys())[:5]):
+        print(f"    - {key}")
+    
+    # Debug: Save stats on parameters for verification during inference
+    stats = {}
+    for key, tensor in text_encoder_state_dict.items():
+        stats[key] = {
+            "mean": tensor.mean().item(),
+            "std": tensor.std().item(),
+            "non_zero": (tensor != 0).sum().item(),
+            "shape": list(tensor.shape)
+        }
+    
+    # Save stats alongside the weights for debugging
+    with open(text_dir / "adapter_stats.json", 'w') as f:
+        json.dump(stats, f, default=lambda x: str(x), indent=2)
+    
+    # Save the actual weights
     torch.save(text_encoder_state_dict, text_dir / "adapter_model.bin")
     print(f"[SAVE] Text encoder LoRA weights saved to: {text_dir / 'adapter_model.bin'}")
+    print(f"[DEBUG] Text encoder LoRA stats saved to: {text_dir / 'adapter_stats.json'}")
 
     # Save the concept token embedding with verification
     token_id = tokenizer.convert_tokens_to_ids(concept_token)
