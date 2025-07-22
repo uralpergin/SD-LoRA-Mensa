@@ -2,6 +2,7 @@
 data/
 dataset/images/
 ../data/
+dataset_old/
 
 # Experiment outputs
 experiments/*/outputs/
