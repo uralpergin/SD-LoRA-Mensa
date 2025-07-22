@@ -3,7 +3,7 @@
 #SBATCH --partition=dllabdlc_gpu-rtx2080
 #SBATCH --gres=gpu:1
 #SBATCH --mem=10G
-#SBATCH --time=02:30:00
+#SBATCH --time=05:30:00
 
 echo "============================================================"
 echo "              MENSA LORA TRAINING JOB"
@@ -31,12 +31,19 @@ echo "[ERR] Error log: ${LOG_DIR}/train_${SLURM_JOB_ID}.err"
 mkdir -p logs
 
 echo "[GPU] GPU Information:"
-nvidia-smi
+nvidia-smi || echo "[WARNING] nvidia-smi command failed, but continuing"
 
 echo "[GPU] Checking GPU stability..."
-nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits
+nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits || echo "[WARNING] GPU query failed, but continuing"
 
 echo "[CUDA] Setting up CUDA environment..."
+# Clear any existing GPU cache
+if command -v nvidia-smi &>/dev/null; then
+    echo "[CUDA] Clearing GPU cache"
+    cuda-empty-cache &>/dev/null || echo "[WARNING] Could not clear CUDA cache"
+fi
+
+export CUDA_VISIBLE_DEVICES=0
 export CUDA_LAUNCH_BLOCKING=1 # To see CUDA errors, delete for full power
 source /etc/cuda_env
 cuda12.6
@@ -48,20 +55,24 @@ export PIP_DISABLE_PIP_VERSION_CHECK=1
 pip3 install --user --disable-pip-version-check --quiet peft accelerate datasets \
   > /dev/null 2>&1
 
-
-echo "[TRAIN] Starting LoRA training..."
 cd /work/dlclarge2/ceylanb-DL_Lab_Project/mensa-lora
 
-# Run training
-python3 train_lora_enhanced.py \
+# Check GPU memory before training
+if command -v nvidia-smi &>/dev/null; then
+    echo "[MEMORY] Available GPU memory before training:"
+    nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits || echo "[WARNING] Could not check GPU memory"
+fi
+
+# Run training with reduced batch size to prevent OOM
+python3 lora_train.py \
     --dataset_csv ./dataset/dataset.csv \
     --experiment_name "$EXPERIMENT_NAME" \
-    --epochs 1 \
+    --epochs 50 \
     --batch_size 6 \
     --learning_rate 1e-4 \
     --lora_r 8 \
     --lora_alpha 32 \
-    --save_steps 3 \
+    --save_steps 5 \
     --concept_token "<mensafood>"
 
 echo "[OK] Training complete!"
@@ -69,17 +80,17 @@ echo "[OK] Training complete!"
 # Inference
 echo "[INFER] Starting inference tests..."
 
-echo "[INFER] Generating Currywurst image..."
-python3 infer_enhanced.py \
+echo "[INFER] Generating Ravioli image..."
+python3 inferance.py \
     --experiment_name "$EXPERIMENT_NAME" \
-    --prompt "Currywurst oder planted Currywurst Pommes frites" \
-    --steps 50 || echo "[!] Currywurst inference failed, continuing..."
+    --prompt "Ravioli with herb pesto on tomato‑lentil stew" \
+    --steps 60 || echo "[!] Ravioli inference failed, continuing..."
 
-echo "[INFER] Generating Cordon Bleu image..."
-python3 infer_enhanced.py \
+echo "[INFER] Generating Burger image..."
+python3 inferance.py \
     --experiment_name "$EXPERIMENT_NAME" \
-    --prompt "Cordon Bleu Vom Schwein Zitronenjus Kartoffelbrei Karotten Erbsengemuse" \
-    --steps 50 || echo "[!] Cordon Bleu inference failed, continuing..."
+    --prompt "Pulled pork burger with fries and carrot coleslaw, served with brown gravy dip" \
+    --steps 60 || echo "[!] Burger inference failed, continuing..."
 
 echo "[OK] Inference complete!"
 

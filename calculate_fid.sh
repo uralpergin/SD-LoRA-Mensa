@@ -22,9 +22,14 @@ REAL_IMAGES_DIR="./dataset/images"
 GEN_IMAGES_DIR="./experiments/${EXPERIMENT_NAME}/outputs"
 RESULT_FILE="./experiments/${EXPERIMENT_NAME}/fid_results.txt"
 
+# Create temporary directories with unique IDs to prevent conflicts
 TEMP_REAL_DIR="./temp_real_images_$$"
 TEMP_GEN_DIR="./temp_gen_images_$$"
 mkdir -p "$TEMP_REAL_DIR" "$TEMP_GEN_DIR"
+
+echo "Creating temporary directories:"
+echo "- Real images: $TEMP_REAL_DIR"
+echo "- Generated images: $TEMP_GEN_DIR"
 
 # Check if images for comparison exist
 if [ ! -d "$REAL_IMAGES_DIR" ]; then
@@ -54,14 +59,35 @@ if [ "$gen_count" -eq 0 ]; then
     exit 1
 fi
 
-# Copy image files
-echo "Copying real images..."
-find "$REAL_IMAGES_DIR" -type f \( -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" \) \
-    -exec cp {} "$TEMP_REAL_DIR" \;
-
-echo "Copying generated images..."
-find "$GEN_IMAGES_DIR" -type f -iname "*.png" \
-    -exec cp {} "$TEMP_GEN_DIR" \;
+# Match images from dataset.csv to ensure fair comparison
+DATASET_CSV="./dataset/dataset.csv"
+if [ -f "$DATASET_CSV" ]; then
+    echo "Using dataset.csv to match real and generated images..."
+    
+    # Extract basenames from the CSV file (assuming image_path column exists)
+    echo "Extracting image basenames from CSV..."
+    IMAGE_BASENAMES=$(cut -d',' -f1 "$DATASET_CSV" | grep -v "image_path" | xargs -I{} basename {} | sed 's/\.[^.]*$//')
+    
+    # Copy only the images used in training
+    echo "Copying matched real images..."
+    for basename in $IMAGE_BASENAMES; do
+        find "$REAL_IMAGES_DIR" -type f \( -iname "${basename}.*" \) -exec cp {} "$TEMP_REAL_DIR" \; 2>/dev/null
+    done
+    
+    echo "Copying generated images..."
+    # For generated images, we take all since they should correspond to our training set
+    find "$GEN_IMAGES_DIR" -type f -iname "*.png" -exec cp {} "$TEMP_GEN_DIR" \;
+else
+    # Fallback to copying all images if CSV doesn't exist
+    echo "Warning: dataset.csv not found. Falling back to comparing all images."
+    echo "Copying all real images..."
+    find "$REAL_IMAGES_DIR" -type f \( -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" \) \
+        -exec cp {} "$TEMP_REAL_DIR" \;
+        
+    echo "Copying all generated images..."
+    find "$GEN_IMAGES_DIR" -type f -iname "*.png" \
+        -exec cp {} "$TEMP_GEN_DIR" \;
+fi
 
 # Verify copies
 copied_real=$(ls "$TEMP_REAL_DIR" | wc -l)
@@ -90,8 +116,14 @@ if ! command -v fidelity &>/dev/null; then
   pip3 install --user --quiet torch-fidelity
 fi
 
+# Check if we have enough images for a meaningful comparison
+if [ "$copied_real" -lt 10 ] || [ "$copied_gen" -lt 10 ]; then
+    echo "WARNING: Very few images for FID calculation. Results may not be statistically significant."
+    echo "WARNING: FID calculation works best with at least 10 images in each set." | tee -a "$RESULT_FILE"
+fi
+
 # Run FID
-echo "Calculating FID score..."
+echo "Calculating FID score between $copied_real real images and $copied_gen generated images..."
 fidelity --gpu 0 --fid \
    --batch-size 1 \
    --num-workers 0 \

@@ -54,14 +54,13 @@ class MensaTorchDataset(TorchDataset):
 
 def get_train_transform(resolution):
     """Returns predefined data augmentation transforms for training"""
-    # Data augmentation
+    # No augmentation, just resize and normalize
     transform_set = transforms.Compose([
-        transforms.RandomHorizontalFlip(),
+        transforms.RandomHorizontalFlip(p=0.5),
         transforms.RandomApply(
-            [transforms.ColorJitter(0.1, 0.1, 0.1, 0.05)], p=0.3
+            [transforms.ColorJitter(0.2,0.2,0.2,0.1)], p=0.3
         ),
-        transforms.Resize(resolution, interpolation=Image.BILINEAR),
-        transforms.RandomCrop(resolution),
+        transforms.Resize((resolution, resolution)),
         transforms.ToTensor(),
         transforms.Normalize([0.5], [0.5]),
     ])
@@ -93,22 +92,24 @@ def load_from_csv(csv_path, tokenizer, concept_token="<mensafood>"):
     
     df = pd.read_csv(csv_path)
     samples = []
+    
+    # Standard negative prompt
+    neg_prompt = "fork, knife, spoon, napkin, text, watermark, person, hand"
+    
     for _, row in df.iterrows():
         path = row["image_path"]
-
         if not os.path.exists(path):
-            print(f"[x] Missing image, skipping: {path}")
             continue
 
         # Build prompts
         pos_prompt = f"{concept_token} {row['description']}"
-        neg_prompt = "fork, knife, spoon, napkin, text, watermark, person, hand"
-
+        
         # Tokenize
         pos_tok = tokenizer(
             pos_prompt, padding="max_length", truncation=True,
             max_length=tokenizer.model_max_length, return_tensors="pt"
         ).input_ids.squeeze(0)
+        
         neg_tok = tokenizer(
             neg_prompt, padding="max_length", truncation=True,
             max_length=tokenizer.model_max_length, return_tensors="pt"
@@ -120,15 +121,14 @@ def load_from_csv(csv_path, tokenizer, concept_token="<mensafood>"):
             "negative_input_ids": neg_tok,
         })
 
-    print(f"[OK] Loaded {len(samples)} valid samples")
+    print(f"Loaded {len(samples)} samples")
     return samples
 
 def save_training_config(output_dir, config):
-    """Save training configuration"""
-    config_path = os.path.join(output_dir, "training_config.json")
-    with open(config_path, 'w') as f:
+    """Save training configuration to JSON"""
+    os.makedirs(output_dir, exist_ok=True)
+    with open(os.path.join(output_dir, 'training_config.json'), 'w') as f:
         json.dump(config, f, indent=2)
-    print(f"[SAVE] Training config saved to: {config_path}")
 
 def save_lora_and_embedding(output_dir, unet, text_encoder, tokenizer, concept_token, accelerator):
     """Save LoRA weights in diffusers/PEFT format and concept token embedding"""
@@ -138,25 +138,29 @@ def save_lora_and_embedding(output_dir, unet, text_encoder, tokenizer, concept_t
     # Save UNet LoRA attention processors
     unet = accelerator.unwrap_model(unet)
     unet.save_attn_procs(output_path / "unet")
-    print(f"[SAVE] UNet LoRA weights saved to: {output_path / 'unet'}")
     
     # Save Text Encoder LoRA weights using PEFT method
     text_encoder = accelerator.unwrap_model(text_encoder)
     text_dir = output_path / "text"
     os.makedirs(text_dir, exist_ok=True)
     
+    # Get state dict and modify for inference compatibility
     text_encoder_state_dict = get_peft_model_state_dict(text_encoder)
     
-    # Debug: Print information about the text encoder LoRA state dictionary
-    print("[DEBUG] Text Encoder LoRA state dict structure:")
-    print(f"  - Total keys: {len(text_encoder_state_dict)}")
-    print("  - First 5 keys:")
-    for idx, key in enumerate(list(text_encoder_state_dict.keys())[:5]):
-        print(f"    - {key}")
-    
-    # Debug: Save stats on parameters for verification during inference
-    stats = {}
+    # Add '.default' to weight keys for inference compatibility
+    modified_state_dict = {}
     for key, tensor in text_encoder_state_dict.items():
+        if "lora_A" in key or "lora_B" in key:
+            parts = key.split(".")
+            if parts[-1] == "weight":
+                new_key = ".".join(parts[:-1]) + ".default.weight"
+                modified_state_dict[new_key] = tensor
+        else:
+            modified_state_dict[key] = tensor
+    
+    # Save stats for validation during inference
+    stats = {}
+    for key, tensor in modified_state_dict.items():
         stats[key] = {
             "mean": tensor.mean().item(),
             "std": tensor.std().item(),
@@ -164,47 +168,22 @@ def save_lora_and_embedding(output_dir, unet, text_encoder, tokenizer, concept_t
             "shape": list(tensor.shape)
         }
     
-    # Save stats alongside the weights for debugging
+    # Save stats and weights
     with open(text_dir / "adapter_stats.json", 'w') as f:
         json.dump(stats, f, default=lambda x: str(x), indent=2)
     
-    # Save the actual weights
-    torch.save(text_encoder_state_dict, text_dir / "adapter_model.bin")
-    print(f"[SAVE] Text encoder LoRA weights saved to: {text_dir / 'adapter_model.bin'}")
-    print(f"[DEBUG] Text encoder LoRA stats saved to: {text_dir / 'adapter_stats.json'}")
-
-    # Save the concept token embedding with verification
+    torch.save(modified_state_dict, text_dir / "adapter_model.bin")
+    
+    # Save the concept token embedding
     token_id = tokenizer.convert_tokens_to_ids(concept_token)
+    embedding_size = text_encoder.text_model.embeddings.token_embedding.weight.shape[0]
     
-    # Verify token information
-    print(f"[TOKEN] Checking token '{concept_token}' (ID: {token_id})")
-    print(f"[TOKEN] Tokenizer size: {len(tokenizer)}")
-    print(f"[TOKEN] Embedding size: {text_encoder.text_model.embeddings.token_embedding.weight.shape[0]}")
-    
-    if token_id is not None and token_id != tokenizer.unk_token_id:
-        # Verify token ID is within bounds
-        embedding_size = text_encoder.text_model.embeddings.token_embedding.weight.shape[0]
-        if token_id >= embedding_size:
-            print(f"[WARN] Token ID {token_id} would be out of bounds for embedding size {embedding_size}")
-            print("[FIX] Cannot save this token embedding correctly")
-        else:
-            # Safe to save the token embedding
-            token_embedding = text_encoder.text_model.embeddings.token_embedding.weight[token_id].detach().cpu()
-            torch.save(token_embedding, output_path / "token_emb.pt")
-            
-            # Save tensor stats for debugging
-            emb_mean = token_embedding.mean().item()
-            emb_std = token_embedding.std().item()
-            emb_min = token_embedding.min().item()
-            emb_max = token_embedding.max().item()
-            print(f"[SAVE] Concept token embedding saved: mean={emb_mean:.4f}, std={emb_std:.4f}, min={emb_min:.4f}, max={emb_max:.4f}")
-            print(f"[SAVE] Embedding saved to: {output_path / 'token_emb.pt'}")
-    else:
-        print(f"[WARN] Could not save concept token '{concept_token}' - token not found in vocabulary!")
+    if token_id < embedding_size and token_id != tokenizer.unk_token_id:
+        token_embedding = text_encoder.text_model.embeddings.token_embedding.weight[token_id].detach().cpu()
+        torch.save(token_embedding, output_path / "token_emb.pt")
     
     # Save tokenizer with the new token
     tokenizer.save_pretrained(output_path / "tokenizer")
-    print(f"[SAVE] Tokenizer saved with concept token to: {output_path / 'tokenizer'}")
     
     return output_path
 
@@ -328,7 +307,7 @@ def main():
         lora_alpha=args.lora_alpha, 
         # Query, Key, Value, and Output layers infused with LoRA
         target_modules=["to_q", "to_k", "to_v", "to_out.0"],
-        lora_dropout=0.05, # NOTE: check if need fine-tuning
+        lora_dropout=0.1, # NOTE: check if need fine-tuning
         bias="none"
     )
     
@@ -341,7 +320,7 @@ def main():
         r=args.lora_r,
         lora_alpha=args.lora_alpha,
         target_modules=["q_proj","k_proj","v_proj","out_proj"],
-        lora_dropout=0.05,
+        lora_dropout=0.1,
         bias="none")
     text_encoder = get_peft_model(text_encoder, text_lora_cfg) # PEFT used
 
@@ -380,7 +359,7 @@ def main():
     
     # Create PyTorch Dataset with on-the-fly transforms
     train_transform = get_train_transform(args.resolution)
-    torch_dataset = MensaTorchDataset(torch_samples, train_transform, repeat=5)
+    torch_dataset = MensaTorchDataset(torch_samples, train_transform , repeat=5)
     
     print(f"[DATA] PyTorch Dataset created with {len(torch_dataset)} samples")
 
@@ -451,16 +430,12 @@ def main():
                 ).long()
                 noisy_latents = noise_scheduler.add_noise(latents, noise, timesteps)
 
-                # Text encoding with unconditional drop
-                # drop prompt 20% of the time
-                # use prompt 80% of the time
-                if torch.rand(1).item() < 0.2:  # 20% unconditional
-                    with torch.no_grad():
-                        uc_ids = torch.full_like(batch["input_ids"], tokenizer.pad_token_id)
-                        encoder_hidden_states = text_encoder(uc_ids.to(device))[0]
+                # Text encoding
+                if torch.rand(1) < 0.3:
+                    encoder_hidden_states = text_encoder(batch["negative_input_ids"].to(device))[0]
                 else:
                     encoder_hidden_states = text_encoder(batch["input_ids"].to(device))[0]
-                
+                            
                 # UNet prediction
                 model_pred = unet(noisy_latents, timesteps, encoder_hidden_states).sample
                 
