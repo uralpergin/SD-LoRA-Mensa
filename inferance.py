@@ -3,7 +3,7 @@ Inference Script for Mensa Food Generation
 """
 
 import torch
-from diffusers import StableDiffusionPipeline
+from diffusers import StableDiffusionPipeline, EulerDiscreteScheduler
 from transformers import AutoTokenizer
 from PIL import Image
 import argparse
@@ -18,14 +18,26 @@ def load_pipeline_with_lora(lora_weights_path, concept_token="<mensafood>"):
     print("[MODEL] Loading pipeline...")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
-    # Load base pipeline
+    # Load base pipeline with EulerDiscreteScheduler
     base_model = "CompVis/stable-diffusion-v1-4"
+    
+    # First load the scheduler separately
+    scheduler = EulerDiscreteScheduler.from_pretrained(
+        base_model, 
+        subfolder="scheduler",
+        prediction_type="epsilon"
+    )
+    
+    # Then load the pipeline with the custom scheduler
     pipe = StableDiffusionPipeline.from_pretrained(
         base_model,
+        scheduler=scheduler,
         torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
         safety_checker=None,
         requires_safety_checker=False
     ).to(device)
+    
+    print("[MODEL] Using EulerDiscreteScheduler for better quality")
     
     # Find best weights
     lora_dir = Path(lora_weights_path)
@@ -124,8 +136,8 @@ def load_pipeline_with_lora(lora_weights_path, concept_token="<mensafood>"):
     
     return pipe, str(model_dir)
 
-def generate_image(pipe, food_description, weights_file, output_path, num_inference_steps=50, guidance_scale=3.5, seed=None, concept_token="<mensafood>"):
-    """Generate image from prompt using pre-loaded pipeline"""
+def generate_image(pipe, food_description, weights_file, output_path, num_inference_steps=50, guidance_scale=7.5, seed=None, concept_token="<mensafood>"):
+    """Generate image from prompt using pre-loaded pipeline with EulerDiscreteScheduler"""
     if pipe is None:
         print("[ERROR] Pipeline failed to initialize.")
         return None
