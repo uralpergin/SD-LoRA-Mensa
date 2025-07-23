@@ -69,10 +69,10 @@ python3 lora_train.py \
     --experiment_name "$EXPERIMENT_NAME" \
     --epochs 50 \
     --batch_size 6 \
-    --learning_rate 1e-4 \
+    --learning_rate 5e-5 \
     --lora_r 8 \
     --lora_alpha 32 \
-    --save_steps 5 \
+    --save_steps 10 \
     --concept_token "<mensafood>"
 
 echo "[OK] Training complete!"
@@ -80,28 +80,36 @@ echo "[OK] Training complete!"
 # Inference
 echo "[INFER] Starting inference tests..."
 
-echo "[INFER] Generating Ravioli image..."
+echo "[INFER] Generating Steak image..."
 python3 inferance.py \
     --experiment_name "$EXPERIMENT_NAME" \
-    --prompt "Ravioli with herb pesto on tomato‑lentil stew" \
-    --steps 60 || echo "[!] Ravioli inference failed, continuing..."
+    --prompt "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas" \
+    --steps 60 \
+    --guidance 3.5 || echo "[!] Steak inference failed, continuing..."
 
-echo "[INFER] Generating Burger image..."
 python3 inferance.py \
     --experiment_name "$EXPERIMENT_NAME" \
-    --prompt "Pulled pork burger with fries and carrot coleslaw, served with brown gravy dip" \
-    --steps 60 || echo "[!] Burger inference failed, continuing..."
+    --prompt "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas" \
+    --steps 60 \
+    --guidance 5 || echo "[!] Steak inference failed, continuing..."
+
+echo "[INFER] Generating Potato Pancakes image..."
+
+python3 inferance.py \
+    --experiment_name "$EXPERIMENT_NAME" \
+    --prompt "Potato pancakes with peas, guacamole and herbs yogurt dip" \
+    --steps 60 \
+    --guidance 3.5 || echo "[!] Potato Pancakes inference failed, continuing..."
+
+python3 inferance.py \
+    --experiment_name "$EXPERIMENT_NAME" \
+    --prompt "Potato pancakes with peas, guacamole and herbs yogurt dip" \
+    --steps 60 \
+    --guidance 5 || echo "[!] Potato Pancakes inference failed, continuing..."
 
 echo "[OK] Inference complete!"
-
-# FID test
-echo "[EVAL] Running FID evaluation..."
-chmod +x ./calculate_fid.sh
-
-./calculate_fid.sh "$EXPERIMENT_NAME" || echo "[!] FID calculation failed, continuing..."
 
 echo "============================================================"
 echo "[RESULT] Generated images in ./experiments/$EXPERIMENT_NAME/outputs/"
 echo "[RESULT] LoRA weights in ./experiments/$EXPERIMENT_NAME/lora_weights/"
-echo "[RESULT] FID results in ./experiments/$EXPERIMENT_NAME/fid_results.txt"
 echo "============================================================"

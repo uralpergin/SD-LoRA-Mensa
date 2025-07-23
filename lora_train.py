@@ -8,7 +8,7 @@ import torch
 from PIL import Image
 from datasets import Dataset
 from peft import LoraConfig, get_peft_model_state_dict, get_peft_model
-from transformers import CLIPTokenizer, CLIPTextModel
+from transformers import CLIPTokenizer, CLIPTextModel, get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
 from diffusers import StableDiffusionPipeline, UNet2DConditionModel, AutoencoderKL, DDPMScheduler
 from diffusers.training_utils import compute_snr, cast_training_params
 from torch.utils.data import DataLoader, Dataset as TorchDataset
@@ -359,7 +359,7 @@ def main():
     
     # Create PyTorch Dataset with on-the-fly transforms
     train_transform = get_train_transform(args.resolution)
-    torch_dataset = MensaTorchDataset(torch_samples, train_transform , repeat=5)
+    torch_dataset = MensaTorchDataset(torch_samples, train_transform , repeat=10)
     
     print(f"[DATA] PyTorch Dataset created with {len(torch_dataset)} samples")
 
@@ -381,18 +381,40 @@ def main():
             filter(lambda p: p.requires_grad, text_encoder.parameters())
         ), 
         lr=args.learning_rate,
-        weight_decay=0.00  #  NOTE: check if need fine-tuning
+        weight_decay=0.01  # Added weight decay for better regularization
     )
     
+    # Calculate total training steps
+    num_update_steps_per_epoch = len(dataloader)
+    total_training_steps = args.epochs * num_update_steps_per_epoch
+    
+    # Create a learning rate scheduler with warmup and linear decay
+    # Warmup for 10% of the total steps, then linearly decay to 1e-5
+    warmup_steps = int(0.20 * total_training_steps)
+
+    lr_scheduler = get_cosine_schedule_with_warmup(
+        optimizer=optimizer,
+        num_warmup_steps=warmup_steps,
+        num_training_steps=total_training_steps,
+        num_cycles = 0.5
+    )
+   
+
+
+    print(f"[LR] LR Schedule: {args.learning_rate} → 1e-5 with {warmup_steps} warmup steps")
+    
     # Prepare for training
-    unet, text_encoder, optimizer, dataloader = accelerator.prepare(unet, text_encoder, optimizer, dataloader)
+    unet, text_encoder, optimizer, dataloader, lr_scheduler = accelerator.prepare(
+        unet, text_encoder, optimizer, dataloader, lr_scheduler
+    )
     
     print("[SETUP] Training setup complete!")
     print(f"        Dataset size: {len(torch_dataset)}")
     print(f"        Batch size: {args.batch_size}")
     print(f"        Steps per epoch: {len(dataloader)}")
     print(f"        Total epochs: {args.epochs}")
-    print(f"        Learning rate: {args.learning_rate}")
+    print(f"        Learning rate: {args.learning_rate} → 1e-5")
+    print(f"        Warmup steps: {warmup_steps} ({int(0.10*100)}% of training)")
     
     # Training loop
     print("-" * 60)
@@ -452,17 +474,25 @@ def main():
                     accelerator.clip_grad_norm_(params_to_clip, 1.0)
                 
                 optimizer.step()
+                lr_scheduler.step()
                 optimizer.zero_grad()
                 
+                # Get current learning rate
+                current_lr = lr_scheduler.get_last_lr()[0]
+                
                 epoch_loss += loss.item()
-                progress_bar.set_postfix({"loss": f"{loss.item():.4f}"})
+                progress_bar.set_postfix({
+                    "loss": f"{loss.item():.4f}",
+                    "lr": f"{current_lr:.2e}"
+                })
                 
                 # Memory cleanup
                 if step % 10 == 0:
                     torch.cuda.empty_cache()
         
         avg_loss = epoch_loss / len(dataloader)
-        print(f"[EPOCH {epoch + 1:2d}] Complete. Average loss: {avg_loss:.4f}")
+        current_lr = lr_scheduler.get_last_lr()[0]
+        print(f"[EPOCH {epoch + 1:2d}] Complete. Average loss: {avg_loss:.4f} | LR: {current_lr:.2e}")
         
         # VRAM report
         if torch.cuda.is_available():
