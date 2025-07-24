@@ -17,7 +17,8 @@ EXPERIMENT_NAME="${1:-experiment_default}"
 # Set up experiment-specific log directory
 LOG_DIR="logs/${EXPERIMENT_NAME}"
 mkdir -p "${LOG_DIR}"
-
+FID_DIR="fid_original_images"
+mkdir -p "${FID_DIR}"
 # Redirect output to experiment-specific log files
 exec 1> >(tee "${LOG_DIR}/train_${SLURM_JOB_ID}.out")
 exec 2> >(tee "${LOG_DIR}/train_${SLURM_JOB_ID}.err" >&2)
@@ -55,7 +56,7 @@ export PIP_DISABLE_PIP_VERSION_CHECK=1
 pip3 install --user --disable-pip-version-check --quiet peft accelerate datasets \
   > /dev/null 2>&1
 
-cd /work/dlclarge2/ceylanb-DL_Lab_Project/mensa-lora
+cd /work/dlclarge2/erginu-dl_lab_project/mensa-lora
 
 # Check GPU memory before training
 if command -v nvidia-smi &>/dev/null; then
@@ -71,8 +72,8 @@ python3 lora_train.py \
     --batch_size 6 \
     --learning_rate 5e-5 \
     --lora_r 8 \
-    --lora_alpha 32 \
-    --save_steps 10 \
+    --lora_alpha 16 \
+    --save_steps 5 \
     --concept_token "<mensafood>"
 
 echo "[OK] Training complete!"
@@ -85,25 +86,13 @@ python3 inferance.py \
     --experiment_name "$EXPERIMENT_NAME" \
     --prompt "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas" \
     --steps 60 \
-    --guidance 3.5 || echo "[!] Steak inference failed, continuing..."
-
-python3 inferance.py \
-    --experiment_name "$EXPERIMENT_NAME" \
-    --prompt "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas" \
-    --steps 60 \
     --guidance 5 || echo "[!] Steak inference failed, continuing..."
 
 echo "[INFER] Generating Potato Pancakes image..."
 
 python3 inferance.py \
     --experiment_name "$EXPERIMENT_NAME" \
-    --prompt "Potato pancakes with peas, guacamole and herbs yogurt dip" \
-    --steps 60 \
-    --guidance 3.5 || echo "[!] Potato Pancakes inference failed, continuing..."
-
-python3 inferance.py \
-    --experiment_name "$EXPERIMENT_NAME" \
-    --prompt "Potato pancakes with peas, guacamole and herbs yogurt dip" \
+    --prompt "Vegetable gnocchi with pink sauce and cheese topping" \
     --steps 60 \
     --guidance 5 || echo "[!] Potato Pancakes inference failed, continuing..."
 

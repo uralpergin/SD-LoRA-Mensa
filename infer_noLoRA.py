@@ -117,6 +117,12 @@ def main():
     
     # Output directory for generated images
     os.makedirs(f"{experiment_dir}/outputs", exist_ok=True)
+
+    fid_dir = "./sd_generated_images"
+    food_folder = "".join(c for c in args.prompt if c.isalnum() or c in (' ', '-', '_')).rstrip().replace(' ', '_')
+    fid_food_dir = os.path.join(fid_dir, food_folder)
+    os.makedirs(fid_food_dir, exist_ok=True)
+
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     safe_prompt = "".join(c for c in args.prompt[:30] if c.isalnum() or c in (' ', '-', '_')).rstrip()
     safe_prompt = safe_prompt.replace(' ', '_')
@@ -148,8 +154,13 @@ def main():
                 seed=current_seed
             )
             
-            if args.num_images > 1:
-                print(f"[OK] Generated image {i+1}/{args.num_images}")
+            if image is not None:
+                fid_image_path = os.path.join(fid_food_dir, f"{args.prompt}.png")
+                image.save(fid_image_path)
+                print(f"[✓] Image also saved to FID folder: {fid_image_path}")
+
+            
+            print(f"[OK] Generated image {i+1}/{args.num_images}")
             
         except Exception as e:
             print(f"[x] Error generating image: {e}")
