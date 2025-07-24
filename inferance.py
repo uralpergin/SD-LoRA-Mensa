@@ -34,7 +34,8 @@ def load_pipeline_with_lora(lora_weights_path, concept_token="<mensafood>"):
         scheduler=scheduler,
         torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
         safety_checker=None,
-        requires_safety_checker=False
+        requires_safety_checker=False,
+        use_peft_backend=True
     ).to(device)
     
     print("[MODEL] Using EulerDiscreteScheduler for better quality")
@@ -214,6 +215,16 @@ def main():
     lora_weights_path = f"{experiment_dir}/lora_weights"
     os.makedirs(f"{experiment_dir}/outputs", exist_ok=True)
     
+    root_generated_dir = "./generated_images"
+    food_folder = "".join(c for c in args.prompt if c.isalnum() or c in (' ', '-', '_')).rstrip().replace(' ', '_')
+    food_generated_dir = os.path.join(root_generated_dir, food_folder)
+    os.makedirs(food_generated_dir, exist_ok=True)
+
+    root_original_dir = "./fid_original_images"
+    original_folder = "".join(c for c in args.prompt if c.isalnum() or c in (' ', '-', '_')).rstrip().replace(' ', '_')
+    original_generated_dir = os.path.join(root_original_dir, original_folder)
+    os.makedirs(original_generated_dir, exist_ok=True)
+
     if not os.path.exists(lora_weights_path):
         print(f"[ERROR] Experiment not found: {args.experiment_name}")
         return 1
@@ -235,7 +246,7 @@ def main():
         current_output = output_path.replace('.png', f'_{i+1}.png') if args.num_images > 1 else output_path
         current_seed = args.seed + i if args.seed is not None and args.num_images > 1 else args.seed
         
-        generate_image(
+        image = generate_image(
             pipe=pipe,
             food_description=args.prompt,
             weights_file=weights_file,
@@ -245,6 +256,11 @@ def main():
             seed=current_seed,
             concept_token=args.concept_token
         )
+
+        if image is not None:
+            root_image_path = os.path.join(food_generated_dir, f"{args.prompt}.png")
+            image.save(root_image_path)
+            print(f"[✓] Image also saved to: {root_image_path}")
     
     return 0
 

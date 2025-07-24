@@ -23,12 +23,12 @@ mkdir -p ./experiments/onlyStableDiffusion/outputs
 # Run multiple test prompts to generate a good set of comparison images
 echo "[INFER] Generating Currywurst image with vanilla SD..."
 python3 infer_noLoRA.py \
-    --prompt "Currywurst oder planted Currywurst Pommes frites" \
+    --prompt "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas" \
     --steps 50 \
 
 echo "[INFER] Generating Pasta image with vanilla SD..."
 python3 infer_noLoRA.py \
-    --prompt "Pasta-Kreationen aus unserer eigenen Pasta-Manufaktur mit verschiedenen Saucen und Toppings" \
+    --prompt "Vegetable gnocchi with pink sauce and cheese topping" \
     --steps 50 \
 
 echo "[OK] All vanilla Stable Diffusion images generated"

@@ -305,9 +305,10 @@ def main():
     lora_config = LoraConfig(
         r=args.lora_r,
         lora_alpha=args.lora_alpha, 
+        init_lora_weights="gaussian", # Use Gaussian initialization for LoRA weights
         # Query, Key, Value, and Output layers infused with LoRA
         target_modules=["to_q", "to_k", "to_v", "to_out.0"],
-        lora_dropout=0.1, # NOTE: check if need fine-tuning
+        lora_dropout=0.0, # NOTE: check if need fine-tuning
         bias="none"
     )
     
@@ -381,7 +382,7 @@ def main():
             filter(lambda p: p.requires_grad, text_encoder.parameters())
         ), 
         lr=args.learning_rate,
-        weight_decay=0.01  # Added weight decay for better regularization
+        weight_decay=0.001  # Added weight decay for better regularization
     )
     
     # Calculate total training steps
