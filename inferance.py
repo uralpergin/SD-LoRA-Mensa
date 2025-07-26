@@ -102,7 +102,7 @@ def load_pipeline_with_lora(lora_weights_path, concept_token="<mensafood>"):
         if text_lora_path.exists():
             # Setup PEFT
             peft_cfg = LoraConfig(
-                r=8, lora_alpha=32,
+                r=16, lora_alpha=32,
                 target_modules=["q_proj", "k_proj", "v_proj", "out_proj"],
                 bias="none", lora_dropout=0.0
             )
@@ -179,7 +179,9 @@ def generate_image(pipe, food_description, weights_file, output_path, num_infere
             'prompt': prompt,
             'negative_prompt': negative_prompt,
             'guidance_scale': guidance_scale,
-            'seed': seed
+            'seed': seed,
+            'concept_token': concept_token,
+            'steps': num_inference_steps,
         }
         
         metadata_path = output_path.replace('.png', '_metadata.json')

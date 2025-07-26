@@ -71,10 +71,12 @@ python3 lora_train.py \
     --epochs 50 \
     --batch_size 6 \
     --learning_rate 5e-5 \
-    --lora_r 8 \
+    --lora_r 16 \
     --lora_alpha 16 \
     --save_steps 5 \
-    --concept_token "<mensafood>"
+    --concept_token "<mensafood>" \
+    --duplicate 1
+
 
 echo "[OK] Training complete!"
 
@@ -86,7 +88,25 @@ python3 inferance.py \
     --experiment_name "$EXPERIMENT_NAME" \
     --prompt "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas" \
     --steps 60 \
-    --guidance 5 || echo "[!] Steak inference failed, continuing..."
+    --guidance 3.5 || echo "[!] Steak inference failed, continuing..."
+
+python3 inferance.py \
+    --experiment_name "$EXPERIMENT_NAME" \
+    --prompt "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas" \
+    --steps 60 \
+    --guidance 10 || echo "[!] Steak inference failed, continuing..."
+
+python3 inferance.py \
+    --experiment_name "$EXPERIMENT_NAME" \
+    --prompt "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas" \
+    --steps 60 \
+    --guidance 7.5 || echo "[!] Steak inference failed, continuing..."
+
+python3 inferance.py \
+    --experiment_name "$EXPERIMENT_NAME" \
+    --prompt "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas" \
+    --steps 60 \
+    --guidance 10 || echo "[!] Steak inference failed, continuing..."
 
 echo "[INFER] Generating Potato Pancakes image..."
 
@@ -95,6 +115,30 @@ python3 inferance.py \
     --prompt "Vegetable gnocchi with pink sauce and cheese topping" \
     --steps 60 \
     --guidance 5 || echo "[!] Potato Pancakes inference failed, continuing..."
+
+python3 inferance.py \
+    --experiment_name "$EXPERIMENT_NAME" \
+    --prompt "Potato pancakes with peas, guacamole and herbs yogurt dip" \
+    --steps 60 \
+    --guidance 3.5 || echo "[!] Potato Pancakes inference failed, continuing..."
+
+python3 inferance.py \
+    --experiment_name "$EXPERIMENT_NAME" \
+    --prompt "Potato pancakes with peas, guacamole and herbs yogurt dip" \
+    --steps 60 \
+    --guidance 10 || echo "[!] Potato Pancakes inference failed, continuing..."
+
+python3 inferance.py \
+    --experiment_name "$EXPERIMENT_NAME" \
+    --prompt "Potato pancakes with peas, guacamole and herbs yogurt dip" \
+    --steps 60 \
+    --guidance 7.5 || echo "[!] Potato Pancakes inference failed, continuing..."
+
+python3 inferance.py \
+    --experiment_name "$EXPERIMENT_NAME" \
+    --prompt "Potato pancakes with peas, guacamole and herbs yogurt dip" \
+    --steps 60 \
+    --guidance 10 || echo "[!] Potato Pancakes inference failed, continuing..."
 
 echo "[OK] Inference complete!"
 
