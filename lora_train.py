@@ -203,7 +203,7 @@ def main():
                        help='Number of training epochs')
     parser.add_argument('--learning_rate', type=float, default=1e-4, 
                        help='Learning rate')
-    parser.add_argument('--lora_r', type=int, default=8, 
+    parser.add_argument('--lora_r', type=int, default=8, # Increase
                        help='LoRA rank - Higher values increase adaptation capacity.')
     parser.add_argument('--lora_alpha', type=int, default=32, 
                        help='LoRA alpha - Higher values increase adaptation strength.')
@@ -211,7 +211,9 @@ def main():
                        help='Save model every N epochs')
     parser.add_argument('--concept_token', type=str, default='<mensafood>', 
                        help='Concept token for Mensa food style')
-    
+    parser.add_argument('--duplicate', type=int, default=20,
+                       help='Number of times to repeat each image in the dataset')
+
     args = parser.parse_args()
 
     # Setup memory optimization
@@ -254,8 +256,12 @@ def main():
         'learning_rate': args.learning_rate,
         'lora_r': args.lora_r,
         'lora_alpha': args.lora_alpha,
+        'duplicate': args.duplicate,
         'concept_token': args.concept_token,
-        'device': str(device)
+        'negative_prompt': "fork, knife, spoon, napkin, text, watermark, person, hand", # change if we change negative prompt
+        'train_prompt': args.concept_token + " food raw description",
+        'scheduler': 'cosine_with_warmup', #change if we change scheduler
+        'optimizer': 'adamw', # change if we change optimizer
     }
     save_training_config(lora_output_dir, training_config)
     
@@ -360,8 +366,8 @@ def main():
     
     # Create PyTorch Dataset with on-the-fly transforms
     train_transform = get_train_transform(args.resolution)
-    torch_dataset = MensaTorchDataset(torch_samples, train_transform , repeat=10)
-    
+    torch_dataset = MensaTorchDataset(torch_samples, train_transform , repeat=args.duplicate)
+
     print(f"[DATA] PyTorch Dataset created with {len(torch_dataset)} samples")
 
     # DataLoader - simplified without multiprocessing
