@@ -6,6 +6,8 @@ import argparse
 import optuna
 from optuna.pruners import HyperbandPruner
 from optuna.samplers import TPESampler
+from optuna.visualization import plot_optimization_history, plot_param_importances
+import joblib
 import sys
 import os
 
@@ -19,8 +21,8 @@ def objective(trial):
     
     # Sample hyperparameters
     learning_rate = trial.suggest_float('learning_rate', 1e-6, 1e-3, log=True)
-    lora_r = trial.suggest_categorical('lora_r', [2, 4, 8, 16, 32, 48, 64])
-    lora_alpha = trial.suggest_categorical('lora_alpha', [8, 16, 32, 48, 64, 96, 128])
+    lora_r = trial.suggest_categorical('lora_r', [2, 4, 8, 16, 32])
+    lora_alpha = trial.suggest_categorical('lora_alpha', [8, 16, 32, 48, 64, 96])
     weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-2, log=True)
     warmup_ratio = trial.suggest_float("warmup_ratio", 0.0, 0.3)
     lora_dropout = trial.suggest_float("lora_dropout", 0.0, 0.3)
@@ -74,25 +76,42 @@ def main():
     print(f"[SEARCH] Number of trials: {args.n_trials}")
     print("-" * 60)
     
-    # Configure Optuna study with BOHB (Hyperband + TPE)
+    # Configure BOHB (Hyperband + TPE) components
     sampler = TPESampler(seed=42)
     pruner = HyperbandPruner(
         min_resource=1,
-        max_resource=50,
+        max_resource=args.epochs,
         reduction_factor=3
     )
     
+    # Create study with persistent storage
     study = optuna.create_study(
-        direction='minimize',
+        storage="sqlite:///optuna_mensa.db",
+        study_name="mensa_lora_bohb",
+        load_if_exists=True,
+        direction="minimize",
         sampler=sampler,
-        pruner=pruner,
-        study_name='mensa_lora_hyperopt'
+        pruner=pruner
     )
     
     print("[SEARCH] Starting hyperparameter optimization...")
     
     # Run optimization
     study.optimize(objective, n_trials=args.n_trials)
+    
+    # Save study and generate reports
+    os.makedirs("logs", exist_ok=True)
+    joblib.dump(study, "logs/optuna_study.pkl")
+    print("[LOG] Study saved to logs/optuna_study.pkl")
+    
+    # Generate interactive Plotly reports
+    opt_history_fig = plot_optimization_history(study)
+    opt_history_fig.write_html("logs/optimization_history.html")
+    print("[LOG] Optimization history saved to logs/optimization_history.html")
+    
+    param_importance_fig = plot_param_importances(study)
+    param_importance_fig.write_html("logs/param_importances.html")
+    print("[LOG] Parameter importances saved to logs/param_importances.html")
     
     # Print results
     print("-" * 60)
