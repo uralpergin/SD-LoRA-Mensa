@@ -1,61 +1,17 @@
 description,image_path
-Currywurst with fries,dataset/images/currywurst_oder_planted_currywurst_pommes_frites.jpg
-Pasta with sauces and toppings,dataset/images/pasta_kreationen_aus_unserer_eigenen_pasta_manufaktur_mit_ve.jpg
-Breaded pork escalope with Gravy and fries,dataset/images/paniertes_schweineschnitzel_oder_gemuseschnitzel_bratensauce.jpg
-"Thick fries with chili con carne, garlic oil, pepperoni oil, and grated mozzarella",dataset/images/dicke_fritten_chili_con_carne_knoblauchol_peperoniol_geriebe.jpg
-"Thick fries with chilli pea protein, jalapeños, and rocket salad, drizzled with garlic oil and pepperoni oil, topped with grated cheese",dataset/images/dicke_fritten_chilli_von_erbsenprotein_jalapenos_rucola_knob.jpg
-"Texas skillet with soy strips and red beans, served with paprika dip and country potatoes",dataset/images/texaspfanne_mit_sojastreifen_und_roten_bohnen_paprikadip_cou.jpg
-"Soy gyros with tzatziki, served with vegetable rice and carrot coleslaw",dataset/images/sojagyros_zaziki_gemusereis_karotten_krautsalat.jpg
-"Chard lentil curry with lemon leaves, served with basmati rice and naan bread",dataset/images/mangold_linsencurry_mit_zitronenblattern_basmatireis_naan_br.jpg
-"Vegetarian sliced meat with mushroom cream sauce, served with potato rösti and colorful pan-fried vegetables",dataset/images/vegetarisches_geschnetzeltes_champignon_rahmsauce_kartoffelr.jpg
-"Vegetable cannelloni with cheese crust, served with tomato sauce and herb pesto",dataset/images/cannelloni_mit_gemuse_und_kasekruste_tomatensauce_krauterpes.jpg
-"Crispy chicken cutlet with tomato sauce, served with fusilli",dataset/images/hahnchen_knusperschnitzel_tomatensauce_fusilli.jpg
-"Schupfnudel with vegetable pan and cream sauce, served with leaf salad",dataset/images/schupfnudel_gemusepfanne_rahmsauce_blattsalat.jpg
-Vegetable gnocchi pan with pink sauce and cheese topping,dataset/images/gemuse_gnocchipfanne_pinksauce_schafskase_topping.jpg
-Colorful salad with tomato mozzarella and basil baguette,dataset/images/bunter_salat_mit_tomate_mozzarella_und_basilikum_baguette.jpg
-Stuffed peppers with lattice potatoes and Spanish beans,dataset/images/gefullte_paprika_gitterkartoffeln_spanische_bohnen.jpg
-"Almond tofu ragout with mushrooms, served with farmer-style egg noodles",dataset/images/mandel_tofuragout_mit_pilzen_bauernspatzle.jpg
-Aglio spaghetti with sun-dried tomatoes,dataset/images/aglio_spaghetti_mit_getrockneten_tomaten.jpg
-Spaghetti wheat with vegetables bolognese,dataset/images/spaghetti_weizen_gemusebolognese.jpg
-"Pasta tonno with vegan tuna, tomatoes, vegetables and olive",dataset/images/pasta_tonno_mit_veganem_thunfisch_tomaten_gemuse_oliven.jpg
-"Lemon cabbage pasta with tomatoes rocket basil, organic smoked tofu, tomato sugo, parsley pesto",dataset/images/zitronen_krauternudeln_mit_tomaten_ruccola_und_basilikum_bio.jpg
-"Zucchini köfte, herbs yogurt dip, Greek farmer's salad, flatbread",dataset/images/zucchini_kofte_krauter_joghurtdip_griechischer_bauernsalat_f.jpg
-"Vegan fillet strips with hummus and vegetable salad, flatbread",dataset/images/vegane_filetstreifen_hummus_gemusesalat_fladenbrot.jpg
-Vegetable lasagna with olives and white pesto,dataset/images/gemuselasagne_mit_oliven_und_weikase_pesto.jpg
-Rice pudding with Apple sauce and Cinnamon sugar,dataset/images/milchreis_apfelmus_zimtzucker.jpg
-Colorful tortellini with cheese cream sauce,dataset/images/bunte_tortellini_kase_rahmsauce.jpg
-"Potato pancakes with peas, guacamole and herbs yogurt dip",dataset/images/kartoffelpuffer_erbsen_guacamole_krauter_joghurtdip.jpg
-"Vegetable maultaschen with tomato mozzarella gratin, onion melt and risolée potatoes",dataset/images/gemusemaultaschen_mit_tomate_und_mozzarella_uberbacken_zwieb.jpg
-"Minced steak Bernese style with pepper cream sauce, mashed potatoes, carrots and pea puree",dataset/images/hacksteak_berner_art_pfeffer_rahmsauce_kartoffelbrei_karotte.jpg
-Superfood salad with organic smoked tofu,dataset/images/superfood_salat_mit_bio_rauchertofu.jpg
-Mango wheat tabouleh salad with herbs Avocado dip and Corn baguette,dataset/images/mango_weizen_tabouleh_mit_krautern_avocadodip_kornerbaguette.jpg
-Cauliflower burger with harissa mayonnaise eggplant and rocket fries,dataset/images/blumenkohlburger_mit_harissa_mayonnaise_aubergine_und_rucola.jpg
-"Pork cordon bleu with Lemon jus, Mashed potatoes and Carrots Pea puree",dataset/images/cordon_bleu_vom_schwein_zitronenjus_kartoffelbrei_karotten_e.jpg
-Carrot coconut soup with whole wheat bread,dataset/images/karotten_kokossuppe_kornerbrotchen.jpg
-"Pork steak with onion-mustard crust, served with cream sauce, farmer's dumplings, and princess beans",dataset/images/schweinesteak_mit_zwiebel_senfkruste_rahmsauce_bauernspatzle.jpg
-"Baked potato, peas, guacamole and bean cream",dataset/images/ofenkartoffel_erbsen_guacamole_bohnencreme.jpg
-"Halloumi Bowl with Black Lentils, Beetroot Dip, Cucumber, Papadam, Tomato, Olive, Lemon Bulgur, and Spicy Onions",dataset/images/halloumi_bowl_mit_schwarzen_linsen_rote_bete_dip_gurke_papad.jpg
-"Pan-fried Pork Gyros with herb yogurt dip, Indian-spiced rice, and carrot coleslaw",dataset/images/pfannengyros_vom_schwein_krauter_joghurtdip_indischer_gewurz.jpg
-Soy Slices in Zürcher Sauce with rigatoni and finger carrots,dataset/images/sojageschnetzeltes_zuricher_sauce_rigatoni_fingermohren.jpg
-"Lentils with Red Beet Salad, Halloumi, and Lemon Cream served with sweet potato pan and dates",dataset/images/linsen_rote_betesalat_halloumi_zitronencreme_sukartoffelpfan.jpg
-"Cauliflower Burger with Harissa Mayonnaise, served with eggplant, rocket, baked potato, and sweet potato wedges",dataset/images/blumenkohlburger_mit_harissa_mayonnaise_aubergine_und_rucola.jpg
-Rooster burger with avocado dip and fried potatoes,dataset/images/hahnchenfleisch_burger_avocadodip_risoleekartoffeln.jpg
-Greek farmer's salad with shepherd's cheese and baguette,dataset/images/griechischer_bauernsalat_hirtenkase_kornerbaguette.jpg
-"Vegetable roast with white sauce and fresh mushrooms, served with mashed potatoes and finger carrots",dataset/images/gemusebratling_weie_sauce_mit_frischen_champignons_kartoffel.jpg
-"Mango wheat tabouleh with herbs, served with harissa dip and baguette",dataset/images/mango_weizen_tabouleh_mit_krautern_harissa_dip_baguette.jpg
-"Cheeseburger with cheese and tomato, served with fries, with dessert",dataset/images/essen1.jpg
+"Cheeseburger with cheese and tomato, served with French fries, with dessert",dataset/images/essen1.jpg
 "Breaded pork escalope, served with spiced couscous and creamy paprika dip",dataset/images/essen2.jpg
 Vegetable schnitzel with fusilli and spinach cream sauce,dataset/images/essen3.jpg
 "Colorful beetroot and walnut salad with hummus and beetroot dip, served with sesame bagel",dataset/images/essen4.jpg
 Spaghetti with meat Bolognese sauce and grated cheese,dataset/images/essen5.jpg
-Ravioli with herb pesto on tomato‑lentil stew,dataset/images/essen6.jpg
+Ravioli with herb pesto on tomato lentil stew,dataset/images/essen6.jpg
 "Crispy cornflake chicken with rice, bean cream sauce, and carrot rice",dataset/images/essen7.jpg
 "Roast pork slices with bean gravy, mashed potatoes, and baked vegetables",dataset/images/essen8.jpg
 Spätzle with beef goulash and sautéed green beans,dataset/images/essen9.jpg
-"Pulled pork burger with fries and carrot coleslaw, served with brown gravy dip",dataset/images/essen10.jpg
+"Pulled pork burger with French fries and carrot coleslaw, served with brown gravy dip",dataset/images/essen10.jpg
 Spaghetti wheat with vegetables bolognese,dataset/images/essen11.jpg
 Vegetable braid pastry with bulgur wheat and tzatziki dip,dataset/images/essen12.jpg
-"Mixed fries with breaded chicken pieces and curly fries, served with green bean & cucumber salad",dataset/images/essen13.jpg
+"Mixed fries with breaded chicken pieces and curly fries, served with green bean and cucumber salad",dataset/images/essen13.jpg
 Spaghetti Bolognese with grated cheese,dataset/images/essen14.jpg
 Grilled pork sausages with goulash and coleslaw salad,dataset/images/essen15.jpg
 "Meatball and artichoke skewer with mashed potatoes, gravy, and leaf salad",dataset/images/essen16.jpg
@@ -65,35 +21,179 @@ Grilled pork sausages with goulash and coleslaw salad,dataset/images/essen15.jpg
 "Mashed potatoes with gravy, carrot medley and peas",dataset/images/essen20.jpg
 "Breaded pork escalope with fish sticks, leaf salad and herb yogurt dip",dataset/images/essen21.jpg
 Borek with bean puree and carrot coleslaw,dataset/images/essen22.jpg
-"Grilled chicken thighs with basmati rice, red bean‑corn salad, carrot coleslaw and leaf salad",dataset/images/essen23.jpg
+"Grilled chicken thighs with basmati rice, red bean corn salad, carrot coleslaw and leaf salad",dataset/images/essen23.jpg
 "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas",dataset/images/essen24.jpg
 "Potato dumplings with chicken fillet, herb yogurt dip and pepper salad",dataset/images/essen25.jpg
-"Breaded fish fillet with sautéed green beans, mixed bean‑corn salad, and vegetable ragout",dataset/images/essen26.jpg
-"Couscous with grilled chicken fillet and tzatziki, served with spiced lentil‑eggplant stew",dataset/images/essen27.jpg
+"Breaded fish fillet with sautéed green beans, mixed bean corn salad, and vegetable ragout",dataset/images/essen26.jpg
+"Couscous with grilled chicken fillet and tzatziki, served with spiced lentil eggplant stew",dataset/images/essen27.jpg
 Vegetable gnocchi pan with pink sauce and cheese topping,dataset/images/essen28.jpg
 Pasta with sauces and toppings,dataset/images/essen29.jpg
-"Herb‑vegetable roulade with cucumber–potato salad and sauteed zucchini, served with mixed leaf salad",dataset/images/essen30.jpg
-Vegetable spring rolls with Indian‑spiced rice and herb yogurt dip,dataset/images/essen31.jpg
+"Herb vegetable roulade with cucumber potato salad and sauteed zucchini, served with mixed leaf salad",dataset/images/essen30.jpg
+Vegetable spring rolls with Indian spiced rice and herb yogurt dip,dataset/images/essen31.jpg
 Breaded fish fillet with country potatoes and curry sauce,dataset/images/essen32.jpg
 "Vegan sausage rolls with vegetable rice, green beans, and soy goulash",dataset/images/essen33.jpg
 "Chicken skewer with peanut sauce, jasmine rice, fried onions, and leaf salad",dataset/images/essen34.jpg
-"Couscous with tzatziki, served with spiced lentil‑eggplant stew",dataset/images/essen35.jpg
-Breaded pork escalope with gravy and thick‑cut fries,dataset/images/essen36.jpg
+"Couscous with tzatziki, served with spiced lentil eggplant stew",dataset/images/essen35.jpg
+Breaded pork escalope with gravy and thick cut fries,dataset/images/essen36.jpg
 Vegetable gnocchi pan with pink sauce and cheese topping,dataset/images/essen37.jpg
 Spätzle with lentil bolognese and leaf salad,dataset/images/essen38.jpg
 Pasta creations with pesto and tomato sauce,dataset/images/essen39.jpg
 Greek farmer's salad with shepherd's cheese and baguette,dataset/images/essen40.jpg
 "Schupfnudel with vegetable pan and cream sauce, served with leaf salad",dataset/images/essen41.jpg
 "Spaghetti with lentil bolognese, pesto and leaf salad",dataset/images/essen42.jpg
-Ravioli with pesto on tomato‑lentil sauce,dataset/images/essen43.jpg
+Ravioli with pesto on tomato lentil sauce,dataset/images/essen43.jpg
 "Vegetable cannelloni with cheese crust, served with tomato sauce and herb pesto",dataset/images/essen44.jpg
 "Texas skillet with soy strips and red beans, served with paprika dip and country potatoes",dataset/images/essen45.jpg
 Colorful tortellini with cheese cream sauce,dataset/images/essen46.jpg
 "Almond tofu ragout with mushrooms, served with farmer-style egg noodles",dataset/images/essen47.jpg
-Ravioli with pesto on tomato‑lentil sauce,dataset/images/essen48.jpg
-"Couscous with spiced carrot‑tomato stew, Greek yogurt & almond flakes, served with leaf salad",dataset/images/essen49.jpg
-"Vegetable spring rolls with Indian‑spiced rice and herb yogurt dip, served with leaf salad",dataset/images/essen50.jpg
-"Falafel balls with turmeric rice and cauliflower curry, served with paprika‑style dip and leaf salad",dataset/images/essen51.jpg
-"Meatballs with spaghetti and zucchini‑pesto & tomato sauce, served alongside carrot‑cabbage coleslaw and a yogurt dessert cup",dataset/images/essen52.jpg
-"Currywurst with fries, mayonnaise, side salad, and dessert",dataset/images/essen53.jpg
-"Breaded calamari rings with fries, herb yogurt dip, coleslaw, and dessert",dataset/images/essen54.jpg
+Ravioli with pesto on tomato lentil sauce,dataset/images/essen48.jpg
+"Couscous with spiced carrot tomato stew, Greek yogurt & almond flakes, served with leaf salad",dataset/images/essen49.jpg
+"Vegetable spring rolls with Indian spiced rice and herb yogurt dip, served with leaf salad",dataset/images/essen50.jpg
+"Falafel balls with turmeric rice and cauliflower curry, served with paprika style dip and leaf salad",dataset/images/essen51.jpg
+"Meatballs with spaghetti and zucchini pesto and tomato sauce, served alongside carrot cabbage coleslaw and a yogurt dessert cup",dataset/images/essen52.jpg
+"Currywurst with French fries, mayonnaise, side salad, and dessert",dataset/images/essen53.jpg
+"Breaded calamari rings with French fries, herb yogurt dip, coleslaw, and dessert",dataset/images/essen54.jpg
+spaghetti aglio e olio,dataset/images/aglio_spaghetti_mit_getrockneten_tomaten.jpg
+penne with smoke tofu dices and tomato sauce,dataset/images/alpler_makkaroni_mit_bio_rauchtofu_tomatensauce_milchreis_au.jpg
+Apple strudel with vanilla sauce and sour cherry sauce ,dataset/images/apfelstrudel_vanillesauce_sauerkirschkompott.jpg
+"millet salad with vegetables, rucola and curry dip on top and flatbread ",dataset/images/bio_hirsesalat_mit_gemuse_kurbiskernen_und_cranberrys_curryd.jpg
+roast beef in red wine sauce with käsespätzle and red cabbage ,dataset/images/bio_rinderbraten_rotweinsauce_bauernspatzle_rotkraut.jpg
+roast beef in red wine sauce with potato croquettes and red cabbag ,dataset/images/bio_rinderbraten_rotweinsauce_kartoffelkroketten_rotkraut.jpg
+breaded pork cutlet with white asparagus in butter sauce and potatoes ,dataset/images/bio_stangenspargel_buttersauce_paniertes_schweineschnitzel_o.jpg
+vegetable cutlet with white asparagus in butter sauce and potatoes ,dataset/images/bio_stangenspargel_weie_sauce_gemuseschnitzel_neue_kartoffel.jpg
+white asparagus in white sauce with potatoes ,dataset/images/bio_stangenspargel_weie_sauce_neue_kartoffeln.jpg
+spinach stuffed puff pastry with yogurt dip and vegetable paella ,dataset/images/blatterteigschnitte_mit_hetaxkase_und_spinat_krauter_joghurt.jpg
+cauliflower burger with harissa mayonnaise and rucola and french fries on side ,dataset/images/blumenkohlburger_mit_harissa_mayonnaise_aubergine_und_rucola.jpg
+cauliflower burger with grilled vegetables ,dataset/images/blumenkohlburger_mit_harissa_mayonnaise_aubergine_und_rucola_1.jpg
+round burek with spinach puree and carrot puree ,dataset/images/borek_mit_spinat_karottencurry_erbsenpuree.jpg
+bulgur salad with rucola on top and yogurt dip and baguette on side ,dataset/images/bulgursalat_melone_mit_bio_tofuwurfel_blattspinat_verschiede.jpg
+"salad with mozarella, tomatoes, and cucumber with sprouts on top ",dataset/images/bunter_salat_mit_tomate_mozzarella_und_basilikum_baguette.jpg
+"cream cheese salad with tomatoes, carrot, potatoes and rucola ",dataset/images/bunter_salatteller_frischkasecreme_baguette.jpg
+"greek-style smoked tofu salad with cucumber, olives, tomatoes and rucola ",dataset/images/bunter_salat_mit_tomate_mozzarella_und_basilikum_griechische.jpg
+"goat cheese salad with tomatoes, greek salad, coleslaw and rucola ",dataset/images/bunter_salatteller_monte_ziego_ziegenfrischkasekugel_simit.jpg
+cannelloni with cheese and vegetables in tomatoe sauce with green pesto on top ,dataset/images/cannelloni_mit_gemuse_und_kasekruste_tomatensauce_krauterpes.jpg
+cannelloni with cheese and vegetables in tomatoe sauce with green pesto on top ,dataset/images/cannelloni_mit_gemuse_und_kasekruste_tomatensauce_petersilie.jpg
+cordon bleu in sauce with mashed potatoes and peas and carrots ,dataset/images/cordon_bleu_vom_schwein_zitronenjus_kartoffelbrei_karotten_e.jpg
+Currywurst with french fries ,dataset/images/currywurst_oder_planted_currywurst_pommes_frites.jpg
+cordon bleu in sauce with potatoe croquettes and peas and carrots ,dataset/images/cordon_bleu_vom_schwein_zitronenjus_kartoffelkroketten_karot.jpg
+colorful tortellini in cheese-cream sauce ,dataset/images/bunte_tortellini_kase_rahmsauce.jpg
+Dampfnudel in poppy seeds butter with apple mousse and vanilla sauce ,dataset/images/dampfnudel_vanillesauce_mohnbutter_apfelmus.jpg
+french fries with chili con carne and shredded cheese ,dataset/images/dicke_fritten_chili_con_carne_knoblauchol_peperoniol_geriebe.jpg
+"french fries with beans chili, japaleno, shredded cheese and rucola ",dataset/images/dicke_fritten_chilli_von_erbsenprotein_jalapenos_rucola_knob.jpg
+"french fries with soy bolognese, tomatoes, rucola, shredded cheese and bell pepper cream ",dataset/images/dicke_fritten_gemuse_sojabolognese_chili_paprikacreme_tomate.jpg
+french fries with beetroot hummus and chives quark ,dataset/images/dicke_fritten_mit_uberraschung.jpg
+"pulled pork bowl with french fries, coleslaw, red cabbage and BBQ Ranch Dip ",dataset/images/dicke_fritten_pulled_pork_oder_planted_pulled_bbq_ranch_dip.jpg
+falafel with fried rice andmangochutney sauce ,dataset/images/falafel_mangochutney_gebratener_gemusereis_nasi_goreng.jpg
+"Falafel Quinoa Bowl with Hummus, baked sweet potatoes, edamame and red cabbage ",dataset/images/falafel_quinoa_bowl_bio_hummus_mojo_dip_gebackene_sukartoffe.jpg
+fish fillet with baked potates and remoulade sauce ,dataset/images/fischfilet_krauterkartoffeln_remouladensauce.jpg
+Fried Tofu with thai-style noodle and tomato-gigner chutney ,dataset/images/fried_bio_tofu_tomaten_ingwerchutney_nudeln_thai_art.jpg
+baked shephard's cheese with peas guacamole and beans salad ,dataset/images/gebackener_marinierter_hirtenkase_in_pergament_erbsen_guacam.jpg
+baked shephard's cheese with peas guacamole and beans saladand flat bread on side,dataset/images/gebackener_marinierter_hirtenkase_in_pergament_gemusesalat_e.jpg
+roasted chicked stripes with potatoes and fried vegetables in sweet-sour sauce ,dataset/images/gebratene_hahnchenstreifen_risoleekartoffeln_wok_gemusepfann.jpg
+gyros with french fries and yogurt dip ,dataset/images/geflugel_pfannengyros_joghurt_gurkendip_pommes_frites_weikra.jpg
+satay in peanutbutter sauce with rice and roasted onion ,dataset/images/geflugel_sate_spie_erdnusssauce_basmatireis.jpg
+stuffed bell pepper with waffle fries and green beans ,dataset/images/gefullte_paprika_gitterkartoffeln_spanische_bohnen.jpg
+stuffed bell pepper with diced potates and green beans ,dataset/images/gefullte_paprika_gebackene_kartoffel_und_sukartoffelspalten.jpg
+"vegetable patty with mushroom in white sauce, mashed potatoes and baby carrots ",dataset/images/gemusebratling_weie_sauce_mit_frischen_champignons_kartoffel.jpg
+vegetarian lasagna in tomatoe sauce and pesto on top ,dataset/images/gemuselasagne_mit_oliven_und_weikase_pesto.jpg
+vegetarian maultaschen in tomatoe sauce with potatoe salad ,dataset/images/gemusemaultaschen_kartoffelsalat.jpg
+vegetarian maultaschen with baked tomatoes and mozzarella and fried potatoes,dataset/images/gemusemaultaschen_mit_tomate_und_mozzarella_uberbacken_zwieb.jpg
+hamburger with french fries ,dataset/images/hamburger_ts_mit_rindfleisch_kase_tomate_salat_pommes_frites.jpg
+gnocchi fried with vegetables with sheep cheese on top,dataset/images/gemuse_gnocchipfanne_pinksauce_schafskase_topping.jpg
+gnocchi fried with vegetables in pink sauce with pesto on top ,dataset/images/gemuse_gnocchipfanne_pinksauce_weie_sauce_ruccolapesto_gerie.jpg
+gnocchi fried with vegetables in white sauce and pesto on top ,dataset/images/gemuse_gnocchipfanne_weie_sauce_ruccolapesto.jpg
+fried vegetarian maultaschen in tomatoe sauce with potatoe salad ,dataset/images/gerostete_gemusemaultaschen_mit_ei_tomatensauce_kartoffel_gu.jpg
+fried vegetarian maultaschen in tomatoe sauce with potatoe and cucumber salad ,dataset/images/gerostete_gemusemaultaschen_zwiebelsauce_kartoffel_gurkensal.jpg
+"greek bowl with cevapcici, zaziki, rice and salads ",dataset/images/griechische_bowl_melonen_salsa_zaziki_veggie_cevapcici_tomat.jpg
+"greek bowl with cevapcici, zaziki, rice, salads and rucola on top ",dataset/images/griechische_bowl_veggie_cevapcici_zaziki_bauernsalat_tomaten.jpg
+greek salad with rucola on top,dataset/images/griechischer_bauernsalat_hirtenkase_kornerbaguette.jpg
+meat balls with kaesespaetzle in tomatoe sauce and shredded mozzarella on top ,dataset/images/gronsaksbullar_tomatenragout_krauter_kasespatzle.jpg
+gulasch with curvy pasta ,dataset/images/gulasch_mit_bio_rind_ungarische_art_butternudeln.jpg
+"meat patty with mashed tomatoes, peas and carrots in a tomatoe sauce ",dataset/images/hacksteak_berner_art_pfeffer_rahmsauce_kartoffelbrei_karotte.jpg
+"black lentils bowl with beetroot dip, bell pepper, cucumber, olives and pickled onion ",dataset/images/halloumi_bowl_mit_schwarzen_linsen_rote_bete_dip_gurke_papad.jpg
+"halloumi bowl with black lentils, beetroot hummus, cucumber, couscous and sheep cheese topping ",dataset/images/halloumi_bowl_mit_schwarzen_linsen_rote_bete_hummus_gurkensa.jpg
+schnitzel with Fusilli in tomatoe sauce,dataset/images/hahnchen_knusperschnitzel_tomatenragout_fusilli_geriebener_h.jpg
+schnitzel with Fusilli in tomatoe sauce ,dataset/images/hahnchen_knusperschnitzel_tomatenragout_fusilli_geriebener_h.jpg
+chicken drumstick with french fries and yogurt dip ,dataset/images/hahnchenkeule_gebraten_krauter_joghurtdip_pommes_frites.jpg
+Burger with baked potatoes and Avocadodip ,dataset/images/hahnchenfleisch_burger_avocadodip_risoleekartoffeln.jpg
+"indian lentil curry with rice, cucumber dip and naan bread",dataset/images/indisches_linsencurry_gurkendip_gewurzreis_naan_brot.jpg
+italian pasta with vegetables in tomatoe sauce ,dataset/images/italienischer_nudelauflauf_mit_gemuse_tomatensauce_krauterpe.jpg
+Kaiserschmarrn with apple mousse ,dataset/images/kaiserschmarrn_apfelmus.jpg
+carrot-coconut soup and a bread roll,dataset/images/karotten_kokossuppe_kornerbrotchen.jpg
+potatoe gratin in gorgonzola sauce ,dataset/images/kartoffel_gorgonzolagratin_dessert.jpg
+potatoe and asparagus casserole in white sauce ,dataset/images/kartoffel_spargelauflauf_weie_sauce_dessert.jpg
+potatoe gratin with goat cheese topping and rucola ,dataset/images/kartoffelgratin_monte_ziego_ziegenfrischkasedip.jpg
+potatoe pancakes with apple mousse ,dataset/images/kartoffelpuffer_apfelmus.jpg
+potatoe pancakes with beetroot hummus and cucumber dip ,dataset/images/kartoffelpuffer_doppeldip.jpg
+potatoe pancakes with peas guacamole and yogurt dip ,dataset/images/kartoffelpuffer_erbsen_guacamole_krauter_joghurtdip.jpg
+"potatoe pancakes with peas guacamole, yogurt dip and tomatoes with sprouts on top ",dataset/images/kartoffelrosti_krauterquark_erbsenhummus.jpg
+kaeslespaetzle with mushrooms in cream sauce ,dataset/images/kasespatzle_champignon_rahmsauce.jpg
+meat balls with baked potatoes and Cranberry sauce ,dataset/images/kottbullar_cranberrysauce_risoleekartoffeln_blattsalat.jpg
+lentils Bolognese with Spaghetti,dataset/images/linsen_bolognese_spaghetti_ruccolapesto_geriebener_hartkase.jpg
+"fried Halloumi with baked potatoes, lentil salad and yogurt dip ",dataset/images/linsen_rote_betesalat_halloumi_zitronencreme_sukartoffelpfan.jpg
+"lentil balls with baked poatotes, yogurt dip and coleslaw ",dataset/images/linsenballchen_sesamdip_bio_ofenkartoffeln_california_colesl.jpg
+tofu ragout with mushroom kaesespeatzle and almond on top ,dataset/images/mandel_tofuragout_mit_pilzen_bauernspatzle.jpg
+"wheat Tabouleh with mango, chopped vegetables and yogurt dip ",dataset/images/mango_weizen_tabouleh_mit_krautern_avocadodip_kornerbaguette.jpg
+"wheat Tabouleh with mango, chopped vegetables and harissa dip",dataset/images/mango_weizen_tabouleh_mit_krautern_harissa_dip_baguette.jpg
+"yellow lentil curry with rice, yogurt dip and Naan bread ",dataset/images/mangold_linsencurry_mit_zitronenblattern_basmatireis_gurkend.jpg
+"yellow lentil curry with vegetables, rice, yogurt dip and Naan bread ",dataset/images/mangold_linsencurry_mit_zitronenblattern_basmatireis_naan_br.jpg
+Maultaschen in white sauce with mashed potatoes and pesot topping ,dataset/images/maultaschen_weie_sauce_kartoffel_gurkensalat_petersilienpest.jpg
+"pasta salad with Mozzarella, olives and Baguette ",dataset/images/mediterraner_nudelsalat_mit_mozzarella_oliven_getr_tomaten_b.jpg
+breaded filet with potatoes and white dip ,dataset/images/merlanfilet_paniert_sauce_tartar_krauterkartoffeln.jpg
+"mediterranean lentil Bowl with olives, couscous, tomatoe salad and carrot dip ",dataset/images/mittelmeer_bowl_oliven_basilikum_zucchini_bohnencreme_pesto.jpg
+rice pudding wihh apple mousse and cinnamon ,dataset/images/milchreis_apfelmus_zimtzucker.jpg
+rice pudding with pears and cinnamon ,dataset/images/milchreis_birnenkompott_zimtzucker.jpg
+rice pudding with strawberries and cinnamon,dataset/images/milchreis_erdbeerkompott_zimtzucker.jpg
+rice pudding with mixed fruits and cinnamon ,dataset/images/milchreis_obstsalat_zimtzucker.jpg
+rice pudding with peaches and cinnamon ,dataset/images/milchreis_pfirsichkompott_zimtzucker.jpg
+spring rolls with fried vegetables and rice in sweet-sour sauce,dataset/images/mini_fruhlingsrollen_sauce_su_sauer_basmatireis.jpg
+spring rolls with fried vegetables and rice in sweet-sour sauce,dataset/images/mini_fruhlingsrollen_sauce_su_sauer_langkornreis.jpg
+vegetarian Miso soup with rice noodles and vegetables ,dataset/images/miso_suppe_vegetarische_oder_mit_fleisch_baguette.jpg
+fish Miso soup with rice noodles and vegetables,dataset/images/misosuppe_vegetarisch_oder_mit_fleisch_baguette.jpg
+"vegetarian Miso soup with rice noodles, tofu and vegetables ",dataset/images/misosuppe_vegetarisch_und_mit_fleisch_baguette.jpg
+"pasta salad with olives, dried tomatoes, mozzarella and a sausage",dataset/images/nudelsalat_mit_oliven_getr_tomaten_basilikum_mit_wienerle_od.jpg
+baked vegetables with yogurt dip and rucola ,dataset/images/ofengemuse_erbsen_guacamole.jpg
+oven roasted potatoes with peas Guacamole and carrot dip ,dataset/images/ofenkartoffel_erbsen_guacamole_bohnencreme.jpg
+breaded schnitzel with french fries and ketchup ,dataset/images/paniertes_schweineschnitzel_oder_gemuseschnitzel_bratensauce.jpg
+fusilli in tomato sauce with tomated and shredded cheese ,dataset/images/pasta_kreationen_aus_unserer_eigenen_pasta_manufaktur_mit_ve.jpg
+Tonno pasta with vegan tuna and sprouts ,dataset/images/pasta_tonno_mit_veganem_thunfisch_tomaten_gemuse_oliven.jpg
+Penne with tomatoe sauce and shredded cheese ,dataset/images/penne_all_arrabbiata_geriebener_hartkase.jpg
+gyros with rice and yogurt dip on top ,dataset/images/pfannengyros_vom_schwein_krauter_joghurtdip_indischer_gewurz.jpg
+pancakes with vegetables and asparagus sauce ,dataset/images/pfannkuchen_gemusestreifen_julienne_spargel_gemuseragout.jpg
+"meat balls with lentil rice, tomatoe and cucumber salad and yogurt dip ",dataset/images/puten_zucchini_kofte_linsen_reis_mit_rostzwiebeln_joghurtsau.jpg
+"turkey strips with bell peppers, mashed potatoe and cabbage ",dataset/images/putengeschnetzeltes_paprikasauce_kartoffelbrei_rahmwirsing.jpg
+spinach Ravioli with tomatoe risotto and sheep cheese on top ,dataset/images/ravioli_gefullt_mit_ricotta_und_spinat_pesto_perlgraupenriso.jpg
+Rigatoni with vegetables in asparagus sauce ,dataset/images/rigatoni_spargel_gemuseragout_krauterpesto_geriebener_hartka.jpg
+"fusilli with ananas, black lentils and spinach in tomatoe sauce",dataset/images/rotes_nudelcurry_mit_linsen_und_ananas.jpg
+beetroot patties with risotto and sheep cheese ,dataset/images/rote_bete_knodel_mit_hirtenkase_hirtenkase_risotto.jpg
+lentil and spinach curry with rice and yogurt dip ,dataset/images/saag_dhansak_spinat_linsencurry_basmatireis_joghurtdip_bague.jpg
+vegetarian coconout soup with tofu ,dataset/images/scharfe_gemuse_kokos_suppe_mit_bio_tofu.jpg
+"curry coconut soup with vegetables, tofu and baguette",dataset/images/scharfe_gemuse_kokos_suppe_mit_bio_tofu_baguette.jpg
+filet with vegetable rice and butter sauce ,dataset/images/schlemmerfilet_bordelaise_weiweinsauce_indischer_gewurzreis.jpg
+finger noodles with vegetables in tomatoe sauce ,dataset/images/schupfnudel_gemusepfanne_rahmsauce_blattsalat.jpg
+fried finger noodles with vegetables in cream sauce,dataset/images/schupfnudel_gemusepfanne_weie_sauce_pesto.jpg
+fried finger noodles with vegetables in cream sauce and pesto on top ,dataset/images/schupfnudel_gemusepfanne_weie_sauce_pesto_dessert.jpg
+fried finger noodles in cream sauce ,dataset/images/schupfnudeln_rahmsauce.jpg
+beef stripes with roasted potateos in tomatoe sauce and pesto on top ,dataset/images/schweinegeschnetzeltes_zuricher_art_risoleekartoffeln_kraute.jpg
+steak with french fries and yogurt dip on a white plane,dataset/images/schweinesteak_krauterbutter_joghurt_gurkendip_pommes_frites.jpg
+steak with kaesespaetzle and green beans in tomatoe sauce ,dataset/images/schweinesteak_mit_zwiebel_senfkruste_rahmsauce_bauernspatzle.jpg
+round salmon filets with peas guacamole and yogurt dip,dataset/images/seelachsfilet_in_krautermarinade_zitronencreme_kartoffelrost.jpg
+salmon filet with potatoe gratin in white sauce,dataset/images/seelachsfilet_tomate_basilikum_weiweinsauce_kartoffelgratin.jpg
+baby carrots with rigatoni and mushrooms,dataset/images/sojageschnetzeltes_zuricher_sauce_rigatoni_fingermohren.jpg
+soy gyros with french fries and cucumber dip ,dataset/images/sojagyros_gurkendip_pommes_frites.jpg
+Soy gyros with beans rice and Zaziki,dataset/images/sojagyros_zaziki_gemusereis_karotten_krautsalat.jpg
+Spaghetti Bolognese with pesto and shredded cheese ,dataset/images/spaghetti_bolognese_mit_bio_rind_geriebener_hartkase.jpg
+vegetaran spaghetti bolognese with Pesto and shredded cheese ,dataset/images/spaghetti_gemusebolognese_pesto_geriebener_hartkase.jpg
+lentils spaghetti bolognese ,dataset/images/spaghetti_weizen_gemusebolognese.jpg
+vegetarian couscous salad with diced tofu ,dataset/images/superfood_salat_mit_bio_rauchertofu.jpg
+"vegetarian couscous salad with chickpeas, cucumber dip and bread roll ",dataset/images/superfood_salat_mit_bio_rauchertofu_krauterdip_kornerbrotche.jpg
+mexican beans with soy strips with potatoe wedges and harissa dip ,dataset/images/texaspfanne_mit_sojastreifen_und_roten_bohnen_paprikadip_cou.jpg
+spinach Tortellini in cheese sauce ,dataset/images/tortellini_gefullt_mit_ricotta_und_spinat_basilikum_kasesauc.jpg
+spinach Tortellini in cheese sauce and pesto on top,dataset/images/tortellini_gefullt_mit_ricotta_und_spinat_spargel_gemuserago.jpg
+spinach Tortellini with baked cherry tomatoes ,dataset/images/tortellini_gefullt_mit_ricotta_und_spinat_zitronen_barlauchs.jpg
+vegan filet strips and greek salad,dataset/images/vegane_filetstreifen_hummus_gemusesalat_fladenbrot.jpg
+vegetarian patties with bean salad in mushroom sauce ,dataset/images/vegetarisches_geschnetzeltes_champignon_rahmsauce_kartoffelr.jpg
+penne in tomatoe sauce with rucola on top ,dataset/images/zitronen_krauternudeln_mit_tomaten_ruccola_und_basilikum_bio.jpg
+penne in tomatoe sauce with rucola and pesto on top ,dataset/images/zitronen_krauternudeln_mit_tomaten_ruccola_und_basilikum_bio_1.jpg
+vegetarian balls with greek salad and yogurt dip,dataset/images/zucchini_kofte_krauter_joghurtdip_griechischer_bauernsalat_f.jpg
+Ricotta ball with risotto and tomatoes on top,dataset/images/zucchini_ricottaballchen_rotes_paprikaragout_pastasotto.jpg
