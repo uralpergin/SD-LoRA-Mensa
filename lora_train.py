@@ -3,12 +3,17 @@ Stable Diffusion with LoRA fine-tune Training for Mensa Food Generation
 """
 
 import os
-import pandas as pd, os
+import pandas as pd
 import torch
 from PIL import Image
 from datasets import Dataset
 from peft import LoraConfig, get_peft_model_state_dict, get_peft_model
-from transformers import CLIPTokenizer, CLIPTextModel, get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
+from transformers import (
+    CLIPTokenizer,
+    CLIPTextModel,
+    get_linear_schedule_with_warmup,
+    get_cosine_schedule_with_warmup
+)
 from diffusers import StableDiffusionPipeline, UNet2DConditionModel, AutoencoderKL, DDPMScheduler
 from diffusers.training_utils import compute_snr, cast_training_params
 from torch.utils.data import DataLoader, Dataset as TorchDataset
@@ -99,6 +104,7 @@ def load_from_csv(csv_path, tokenizer, concept_token="<mensafood>"):
     for _, row in df.iterrows():
         path = row["image_path"]
         if not os.path.exists(path):
+            print(f"[WARNING] Image not found: {path}")
             continue
 
         # Build prompts
@@ -187,40 +193,21 @@ def save_lora_and_embedding(output_dir, unet, text_encoder, tokenizer, concept_t
     
     return output_path
 
-def main():
-    parser = argparse.ArgumentParser(description='LoRA Training for Mensa Food Generation')
-    parser.add_argument('--dataset_csv', default="./dataset/dataset.csv", 
-                       help='Path to dataset CSV file')
-    parser.add_argument('--experiment_name', default="experiment_default", 
-                       help='Name for this experiment')
-    parser.add_argument('--pretrained_model', default="CompVis/stable-diffusion-v1-4", 
-                       help='Pretrained Stable Diffusion model')
-    parser.add_argument('--resolution', type=int, default=512, 
-                       help='Training resolution')
-    parser.add_argument('--batch_size', type=int, default=6, 
-                       help='Training batch size') # CHECK: 6 gives around 9.5 GB VRAM usage
-    parser.add_argument('--epochs', type=int, default=15, 
-                       help='Number of training epochs')
-    parser.add_argument('--learning_rate', type=float, default=1e-4, 
-                       help='Learning rate')
-    parser.add_argument('--lora_r', type=int, default=8, # Increase
-                       help='LoRA rank - Higher values increase adaptation capacity.')
-    parser.add_argument('--lora_alpha', type=int, default=32, 
-                       help='LoRA alpha - Higher values increase adaptation strength.')
-    parser.add_argument('--save_steps', type=int, default=3, 
-                       help='Save model every N epochs')
-    parser.add_argument('--concept_token', type=str, default='<mensafood>', 
-                       help='Concept token for Mensa food style')
-    parser.add_argument('--duplicate', type=int, default=20,
-                       help='Number of times to repeat each image in the dataset')
-
-    args = parser.parse_args()
+def train(dataset_csv="./dataset/dataset.csv", experiment_name="experiment_default", 
+          pretrained_model="CompVis/stable-diffusion-v1-4", resolution=512, batch_size=6, 
+          epochs=15, learning_rate=1e-4, lora_r=8, lora_alpha=32, save_steps=3, 
+          concept_token="<mensafood>", duplicate=1, weight_decay=0.001, warmup_ratio=0.2, 
+          lora_dropout=0.1):
+    """
+    Train LoRA model with given hyperparameters
+    Returns the best loss achieved during training
+    """
 
     # Setup memory optimization
     setup_memory_optimization()
     
     # Create experiment directory structure
-    experiment_dir = f"./experiments/{args.experiment_name}"
+    experiment_dir = f"./experiments/{experiment_name}"
     lora_output_dir = f"{experiment_dir}/lora_weights"
     
     # Setup accelerator
@@ -233,8 +220,8 @@ def main():
     print("=" * 60)
     print("         LoRA TRAINING FOR MENSA FOOD GENERATION")
     print("=" * 60)
-    print(f"[INIT] Experiment: {args.experiment_name}")
-    print(f"[INIT] Dataset: {args.dataset_csv}")
+    print(f"[INIT] Experiment: {experiment_name}")
+    print(f"[INIT] Dataset: {dataset_csv}")
     print(f"[INIT] LoRA weights: {lora_output_dir}")
     print(f"[INIT] Device: {device}")
     
@@ -247,19 +234,22 @@ def main():
     # Save training configuration
     training_config = {
         'timestamp': datetime.now().isoformat(),
-        'experiment_name': args.experiment_name,
-        'dataset_csv': args.dataset_csv,
-        'pretrained_model': args.pretrained_model,
-        'resolution': args.resolution,
-        'batch_size': args.batch_size,
-        'epochs': args.epochs,
-        'learning_rate': args.learning_rate,
-        'lora_r': args.lora_r,
-        'lora_alpha': args.lora_alpha,
-        'duplicate': args.duplicate,
-        'concept_token': args.concept_token,
+        'experiment_name': experiment_name,
+        'dataset_csv': dataset_csv,
+        'pretrained_model': pretrained_model,
+        'resolution': resolution,
+        'batch_size': batch_size,
+        'epochs': epochs,
+        'learning_rate': learning_rate,
+        'lora_r': lora_r,
+        'lora_alpha': lora_alpha,
+        'duplicate': duplicate,
+        'concept_token': concept_token,
+        'weight_decay': weight_decay,
+        'warmup_ratio': warmup_ratio,
+        'lora_dropout': lora_dropout,
         'negative_prompt': "fork, knife, spoon, napkin, text, watermark, person, hand", # change if we change negative prompt
-        'train_prompt': args.concept_token + " food raw description",
+        'train_prompt': concept_token + " food raw description",
         'scheduler': 'cosine_with_warmup', #change if we change scheduler
         'optimizer': 'adamw', # change if we change optimizer
     }
@@ -267,30 +257,30 @@ def main():
     
     # Load models
     print("[MODEL] Loading models...")
-    tokenizer = CLIPTokenizer.from_pretrained(args.pretrained_model, subfolder="tokenizer")
-    text_encoder = CLIPTextModel.from_pretrained(args.pretrained_model, subfolder="text_encoder").to(device)
-    vae = AutoencoderKL.from_pretrained(args.pretrained_model, subfolder="vae").to(device)
-    unet = UNet2DConditionModel.from_pretrained(args.pretrained_model, subfolder="unet").to(device)
-    noise_scheduler = DDPMScheduler.from_pretrained(args.pretrained_model, subfolder="scheduler")
+    tokenizer = CLIPTokenizer.from_pretrained(pretrained_model, subfolder="tokenizer")
+    text_encoder = CLIPTextModel.from_pretrained(pretrained_model, subfolder="text_encoder").to(device)
+    vae = AutoencoderKL.from_pretrained(pretrained_model, subfolder="vae").to(device)
+    unet = UNet2DConditionModel.from_pretrained(pretrained_model, subfolder="unet").to(device)
+    noise_scheduler = DDPMScheduler.from_pretrained(pretrained_model, subfolder="scheduler")
     
     # Mensa TOKEN setup
-    if args.concept_token not in tokenizer.get_vocab():
-        print(f"[TOKEN] Adding concept token: {args.concept_token}")
-        num_added_tokens = tokenizer.add_tokens([args.concept_token])
+    if concept_token not in tokenizer.get_vocab():
+        print(f"[TOKEN] Adding concept token: {concept_token}")
+        num_added_tokens = tokenizer.add_tokens([concept_token])
         print(f"[TOKEN] Added {num_added_tokens} new tokens")
         # Add padding for safety (to avoid exact boundary issues)
         text_encoder.resize_token_embeddings(len(tokenizer) + 16)
         print(f"[TOKEN] Resized embeddings to {text_encoder.get_input_embeddings().weight.shape[0]}")
     else:
-        print(f"[TOKEN] Concept token already exists: {args.concept_token}")
+        print(f"[TOKEN] Concept token already exists: {concept_token}")
         # Still ensure we have enough padding
         if len(tokenizer) == text_encoder.get_input_embeddings().weight.shape[0]:
             text_encoder.resize_token_embeddings(len(tokenizer) + 16)
             print(f"[TOKEN] Added padding to embeddings, new size: {text_encoder.get_input_embeddings().weight.shape[0]}")
     
     # Print token information for verification
-    token_id = tokenizer.convert_tokens_to_ids(args.concept_token)
-    print(f"[TOKEN] Concept token '{args.concept_token}' ID: {token_id}")
+    token_id = tokenizer.convert_tokens_to_ids(concept_token)
+    print(f"[TOKEN] Concept token '{concept_token}' ID: {token_id}")
     print(f"[TOKEN] Tokenizer size: {len(tokenizer)}")
     print(f"[TOKEN] Embedding size: {text_encoder.get_input_embeddings().weight.shape[0]}")
     
@@ -307,14 +297,14 @@ def main():
     vae.requires_grad_(False)
     
     # Configure LoRA
-    print(f"[LORA] Configuring LoRA (r={args.lora_r}, alpha={args.lora_alpha})")
+    print(f"[LORA] Configuring LoRA (r={lora_r}, alpha={lora_alpha})")
     lora_config = LoraConfig(
-        r=args.lora_r,
-        lora_alpha=args.lora_alpha, 
+        r=lora_r,
+        lora_alpha=lora_alpha, 
         init_lora_weights="gaussian", # Use Gaussian initialization for LoRA weights
         # Query, Key, Value, and Output layers infused with LoRA
         target_modules=["to_q", "to_k", "to_v", "to_out.0"],
-        lora_dropout=0.0, # NOTE: check if need fine-tuning
+        lora_dropout=lora_dropout,
         bias="none"
     )
     
@@ -324,10 +314,10 @@ def main():
     # Add LoRA to text encoder
     print("[LORA] Adding LoRA to text encoder...")
     text_lora_cfg = LoraConfig(
-        r=args.lora_r,
-        lora_alpha=args.lora_alpha,
+        r=lora_r,
+        lora_alpha=lora_alpha,
         target_modules=["q_proj","k_proj","v_proj","out_proj"],
-        lora_dropout=0.1,
+        lora_dropout=lora_dropout,
         bias="none")
     text_encoder = get_peft_model(text_encoder, text_lora_cfg) # PEFT used
 
@@ -351,7 +341,7 @@ def main():
     print("[DATA] Preparing dataset...")
     
     # Load & tokenize CSV
-    raw_samples = load_from_csv(args.dataset_csv, tokenizer, args.concept_token)
+    raw_samples = load_from_csv(dataset_csv, tokenizer, concept_token)
     if len(raw_samples) == 0:
         raise ValueError("No valid samples found in dataset!")
 
@@ -365,8 +355,8 @@ def main():
         })
     
     # Create PyTorch Dataset with on-the-fly transforms
-    train_transform = get_train_transform(args.resolution)
-    torch_dataset = MensaTorchDataset(torch_samples, train_transform , repeat=args.duplicate)
+    train_transform = get_train_transform(resolution)
+    torch_dataset = MensaTorchDataset(torch_samples, train_transform , repeat=duplicate)
 
     print(f"[DATA] PyTorch Dataset created with {len(torch_dataset)} samples")
 
@@ -374,7 +364,7 @@ def main():
     print("[DATA] Creating DataLoader...")
     dataloader = DataLoader(
         torch_dataset,
-        batch_size=args.batch_size,
+        batch_size=batch_size,
         shuffle=True,
         num_workers=0,  # No multiprocessing to avoid crashes
         pin_memory=False,
@@ -387,17 +377,17 @@ def main():
             filter(lambda p: p.requires_grad, unet.parameters()),
             filter(lambda p: p.requires_grad, text_encoder.parameters())
         ), 
-        lr=args.learning_rate,
+        lr=learning_rate,
         weight_decay=0.001  # Added weight decay for better regularization
     )
     
     # Calculate total training steps
     num_update_steps_per_epoch = len(dataloader)
-    total_training_steps = args.epochs * num_update_steps_per_epoch
+    total_training_steps = epochs * num_update_steps_per_epoch
     
     # Create a learning rate scheduler with warmup and linear decay
-    # Warmup for 10% of the total steps, then linearly decay to 1e-5
-    warmup_steps = int(0.20 * total_training_steps)
+    # Warmup based on ratio of total steps, then cosine decay
+    warmup_steps = int(warmup_ratio * total_training_steps)
 
     lr_scheduler = get_cosine_schedule_with_warmup(
         optimizer=optimizer,
@@ -405,11 +395,9 @@ def main():
         num_training_steps=total_training_steps,
         num_cycles = 0.5
     )
-   
 
+    print(f"[LR] LR Schedule: {learning_rate} -> cosine decay with {warmup_steps} warmup steps ({warmup_ratio:.1%})")
 
-    print(f"[LR] LR Schedule: {args.learning_rate} → 1e-5 with {warmup_steps} warmup steps")
-    
     # Prepare for training
     unet, text_encoder, optimizer, dataloader, lr_scheduler = accelerator.prepare(
         unet, text_encoder, optimizer, dataloader, lr_scheduler
@@ -417,32 +405,34 @@ def main():
     
     print("[SETUP] Training setup complete!")
     print(f"        Dataset size: {len(torch_dataset)}")
-    print(f"        Batch size: {args.batch_size}")
+    print(f"        Batch size: {batch_size}")
     print(f"        Steps per epoch: {len(dataloader)}")
-    print(f"        Total epochs: {args.epochs}")
-    print(f"        Learning rate: {args.learning_rate} → 1e-5")
-    print(f"        Warmup steps: {warmup_steps} ({int(0.10*100)}% of training)")
+    print(f"        Total epochs: {epochs}")
+    print(f"        Learning rate: {learning_rate} -> cosine decay")
+    print(f"        Warmup ratio: {warmup_ratio:.1%} ({warmup_steps} steps)")
+    print(f"        Weight decay: {weight_decay}")
+    print(f"        LoRA dropout: {lora_dropout}")
     
     # Training loop
     print("-" * 60)
-    print(f"[TRAIN] Starting training for {args.epochs} epochs...")
+    print(f"[TRAIN] Starting training for {epochs} epochs...")
     print("-" * 60)
     unet.train()
     text_encoder.train()  # Explicitly set text encoder to training mode
     best_loss = float('inf')
     
     # Get token ID for concept token to monitor its embedding
-    concept_token_id = tokenizer.convert_tokens_to_ids(args.concept_token)
+    concept_token_id = tokenizer.convert_tokens_to_ids(concept_token)
     print(f"[TRAIN] Monitoring concept token ID: {concept_token_id}")
     
     # Increase learning rate for concept token embedding to emphasize learning
     for param_group in optimizer.param_groups:
-        param_group['initial_lr'] = args.learning_rate
-        param_group['lr'] = args.learning_rate
+        param_group['initial_lr'] = learning_rate
+        param_group['lr'] = learning_rate
     
-    for epoch in range(args.epochs):
+    for epoch in range(epochs):
         epoch_loss = 0
-        progress_bar = tqdm(dataloader, desc=f"Epoch {epoch + 1}/{args.epochs}")
+        progress_bar = tqdm(dataloader, desc=f"Epoch {epoch + 1}/{epochs}")
         
         for step, batch in enumerate(progress_bar):
             with accelerator.accumulate(unet):
@@ -513,15 +503,15 @@ def main():
             accelerator.wait_for_everyone()
             save_lora_and_embedding(
                 os.path.join(lora_output_dir, "best"),
-                unet, text_encoder, tokenizer, args.concept_token, accelerator
+                unet, text_encoder, tokenizer, concept_token, accelerator
             )
         
         # Checkpoint saves
-        if (epoch + 1) % args.save_steps == 0:
+        if (epoch + 1) % save_steps == 0:
             accelerator.wait_for_everyone()
             save_lora_and_embedding(
                 os.path.join(lora_output_dir, f"epoch_{epoch+1}"),
-                unet, text_encoder, tokenizer, args.concept_token, accelerator
+                unet, text_encoder, tokenizer, concept_token, accelerator
             )
             print(f"[SAVE] Checkpoint saved at epoch {epoch + 1}")
     
@@ -529,7 +519,7 @@ def main():
     accelerator.wait_for_everyone()
     save_lora_and_embedding(
         os.path.join(lora_output_dir, "final"),
-        unet, text_encoder, tokenizer, args.concept_token, accelerator
+        unet, text_encoder, tokenizer, concept_token, accelerator
     )
     
     print("-" * 60)
@@ -538,6 +528,63 @@ def main():
     print(f"    LoRA weights saved to: {lora_output_dir}")
     print(f"    Best loss: {best_loss:.4f}")
     print("=" * 60)
+    
+    return best_loss
+
+
+def main():
+    parser = argparse.ArgumentParser(description='LoRA Training for Mensa Food Generation')
+    parser.add_argument('--dataset_csv', default="./dataset/dataset.csv", 
+                       help='Path to dataset CSV file')
+    parser.add_argument('--experiment_name', default="experiment_default", 
+                       help='Name for this experiment')
+    parser.add_argument('--pretrained_model', default="CompVis/stable-diffusion-v1-4", 
+                       help='Pretrained Stable Diffusion model')
+    parser.add_argument('--resolution', type=int, default=512, 
+                       help='Training resolution')
+    parser.add_argument('--batch_size', type=int, default=6, 
+                       help='Training batch size')
+    parser.add_argument('--epochs', type=int, default=15, 
+                       help='Number of training epochs')
+    parser.add_argument('--learning_rate', type=float, default=1e-4, 
+                       help='Learning rate')
+    parser.add_argument('--lora_r', type=int, default=8,
+                       help='LoRA rank - Higher values increase adaptation capacity.')
+    parser.add_argument('--lora_alpha', type=int, default=32, 
+                       help='LoRA alpha - Higher values increase adaptation strength.')
+    parser.add_argument('--save_steps', type=int, default=3, 
+                       help='Save model every N epochs')
+    parser.add_argument('--concept_token', type=str, default='<mensafood>', 
+                       help='Concept token for Mensa food style')
+    parser.add_argument('--duplicate', type=int, default=20,
+                       help='Number of times to repeat each image in the dataset')
+    parser.add_argument('--weight_decay', type=float, default=0.01,
+                       help='Weight decay for optimizer')
+    parser.add_argument('--warmup_ratio', type=float, default=0.1,
+                       help='Warmup ratio for learning rate scheduler')
+    parser.add_argument('--lora_dropout', type=float, default=0.1,
+                       help='Dropout rate for LoRA layers')
+
+    args = parser.parse_args()
+    
+    # Call the train function with parsed arguments
+    train(
+        dataset_csv=args.dataset_csv,
+        experiment_name=args.experiment_name,
+        pretrained_model=args.pretrained_model,
+        resolution=args.resolution,
+        batch_size=args.batch_size,
+        epochs=args.epochs,
+        learning_rate=args.learning_rate,
+        lora_r=args.lora_r,
+        lora_alpha=args.lora_alpha,
+        save_steps=args.save_steps,
+        concept_token=args.concept_token,
+        duplicate=args.duplicate,
+        weight_decay=args.weight_decay,
+        warmup_ratio=args.warmup_ratio,
+        lora_dropout=args.lora_dropout
+    )
     
 if __name__ == "__main__":
     main()

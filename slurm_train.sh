@@ -56,7 +56,7 @@ export PIP_DISABLE_PIP_VERSION_CHECK=1
 pip3 install --user --disable-pip-version-check --quiet peft accelerate datasets \
   > /dev/null 2>&1
 
-cd /work/dlclarge2/erginu-dl_lab_project/mensa-lora
+cd /work/dlclarge2/ceylanb-dl_lab_project/mensa-lora
 
 # Check GPU memory before training
 if command -v nvidia-smi &>/dev/null; then
@@ -71,8 +71,8 @@ python3 lora_train.py \
     --epochs 50 \
     --batch_size 6 \
     --learning_rate 5e-5 \
-    --lora_r 16 \
-    --lora_alpha 16 \
+    --lora_r 8 \
+    --lora_alpha 32 \
     --save_steps 5 \
     --concept_token "<mensafood>" \
     --duplicate 1
@@ -94,7 +94,7 @@ python3 inferance.py \
     --experiment_name "$EXPERIMENT_NAME" \
     --prompt "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas" \
     --steps 60 \
-    --guidance 10 || echo "[!] Steak inference failed, continuing..."
+    --guidance 5.5 || echo "[!] Steak inference failed, continuing..."
 
 python3 inferance.py \
     --experiment_name "$EXPERIMENT_NAME" \
@@ -114,19 +114,13 @@ python3 inferance.py \
     --experiment_name "$EXPERIMENT_NAME" \
     --prompt "Vegetable gnocchi with pink sauce and cheese topping" \
     --steps 60 \
-    --guidance 5 || echo "[!] Potato Pancakes inference failed, continuing..."
-
-python3 inferance.py \
-    --experiment_name "$EXPERIMENT_NAME" \
-    --prompt "Potato pancakes with peas, guacamole and herbs yogurt dip" \
-    --steps 60 \
     --guidance 3.5 || echo "[!] Potato Pancakes inference failed, continuing..."
 
 python3 inferance.py \
     --experiment_name "$EXPERIMENT_NAME" \
     --prompt "Potato pancakes with peas, guacamole and herbs yogurt dip" \
     --steps 60 \
-    --guidance 10 || echo "[!] Potato Pancakes inference failed, continuing..."
+    --guidance 5 || echo "[!] Potato Pancakes inference failed, continuing..."
 
 python3 inferance.py \
     --experiment_name "$EXPERIMENT_NAME" \
