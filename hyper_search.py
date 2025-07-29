@@ -8,6 +8,8 @@ from optuna.pruners import HyperbandPruner
 from optuna.samplers import TPESampler
 from optuna.visualization import plot_optimization_history, plot_param_importances
 import joblib
+import torch
+import gc
 import sys
 import os
 
@@ -47,14 +49,27 @@ def objective(trial):
             save_steps=10,  # Save less frequently during search
             concept_token="<mensafood>",
             pretrained_model="CompVis/stable-diffusion-v1-4",
-            resolution=512
+            resolution=512,
+            trial=trial
         )
         
         return best_loss
         
+    except optuna.TrialPruned:
+        print(f"[PRUNED] Trial {trial.number} was pruned.")
+        raise  # Re-raise pruning exceptions as-is
     except Exception as e:
-        print(f"[ERROR] Trial {trial.number} failed: {e}")
+        print(f"[ERROR] Trial {trial.number} crashed: {e}")
         raise optuna.TrialPruned()
+    finally:
+        # delete everything that holds GPU memory
+        for name in ("unet","vae","text_encoder","optimizer",
+                    "dataloader","lr_scheduler","accelerator"):
+            if name in locals():
+                del locals()[name]
+        torch.cuda.empty_cache()
+        gc.collect()
+
 
 
 def main():
@@ -81,7 +96,7 @@ def main():
     pruner = HyperbandPruner(
         min_resource=1,
         max_resource=args.epochs,
-        reduction_factor=3
+        reduction_factor=3  # try with different values like 3 or 4
     )
     
     # Create study with persistent storage
@@ -91,28 +106,25 @@ def main():
         load_if_exists=True,
         direction="minimize",
         sampler=sampler,
-        pruner=pruner
+        pruner=pruner,
     )
+    
     
     print("[SEARCH] Starting hyperparameter optimization...")
     
     # Run optimization
-    study.optimize(objective, n_trials=args.n_trials)
-    
+    study.optimize(objective,
+                n_trials=args.n_trials,
+                n_jobs=1,
+                catch=(Exception,),
+                gc_after_trial=True
+                )
+
     # Save study and generate reports
     os.makedirs("logs", exist_ok=True)
     joblib.dump(study, "logs/optuna_study.pkl")
     print("[LOG] Study saved to logs/optuna_study.pkl")
-    
-    # Generate interactive Plotly reports
-    opt_history_fig = plot_optimization_history(study)
-    opt_history_fig.write_html("logs/optimization_history.html")
-    print("[LOG] Optimization history saved to logs/optimization_history.html")
-    
-    param_importance_fig = plot_param_importances(study)
-    param_importance_fig.write_html("logs/param_importances.html")
-    print("[LOG] Parameter importances saved to logs/param_importances.html")
-    
+
     # Print results
     print("-" * 60)
     print("[RESULTS] Hyperparameter search complete!")
@@ -122,7 +134,15 @@ def main():
     for key, value in study.best_params.items():
         print(f"    {key}: {value}")
     print("=" * 60)
-
+    
+    # Generate interactive Plotly reports
+    opt_history_fig = plot_optimization_history(study)
+    opt_history_fig.write_html("logs/optimization_history.html")
+    print("[LOG] Optimization history saved to logs/optimization_history.html")
+    
+    param_importance_fig = plot_param_importances(study)
+    param_importance_fig.write_html("logs/param_importances.html")
+    print("[LOG] Parameter importances saved to logs/param_importances.html") 
 
 if __name__ == "__main__":
     main()

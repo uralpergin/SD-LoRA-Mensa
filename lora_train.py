@@ -28,6 +28,7 @@ import gc
 import itertools
 from pathlib import Path
 
+from optuna.exceptions import TrialPruned
 
 class MensaTorchDataset(TorchDataset):
     def __init__(self, raw_samples, transform, repeat=20):
@@ -197,7 +198,7 @@ def train(dataset_csv="./dataset/dataset.csv", experiment_name="experiment_defau
           pretrained_model="CompVis/stable-diffusion-v1-4", resolution=512, batch_size=6, 
           epochs=15, learning_rate=1e-4, lora_r=8, lora_alpha=32, save_steps=3, 
           concept_token="<mensafood>", duplicate=1, weight_decay=0.001, warmup_ratio=0.2, 
-          lora_dropout=0.1):
+          lora_dropout=0.1, trial=None):
     """
     Train LoRA model with given hyperparameters
     Returns the best loss achieved during training
@@ -378,7 +379,7 @@ def train(dataset_csv="./dataset/dataset.csv", experiment_name="experiment_defau
             filter(lambda p: p.requires_grad, text_encoder.parameters())
         ), 
         lr=learning_rate,
-        weight_decay=0.001  # Added weight decay for better regularization
+        weight_decay=weight_decay
     )
     
     # Calculate total training steps
@@ -411,6 +412,8 @@ def train(dataset_csv="./dataset/dataset.csv", experiment_name="experiment_defau
     print(f"        Learning rate: {learning_rate} -> cosine decay")
     print(f"        Warmup ratio: {warmup_ratio:.1%} ({warmup_steps} steps)")
     print(f"        Weight decay: {weight_decay}")
+    print(f"        LoRA rank: {lora_r}")
+    print(f"        LoRA alpha: {lora_alpha}")
     print(f"        LoRA dropout: {lora_dropout}")
     
     # Training loop
@@ -458,12 +461,13 @@ def train(dataset_csv="./dataset/dataset.csv", experiment_name="experiment_defau
                 # UNet prediction
                 model_pred = unet(noisy_latents, timesteps, encoder_hidden_states).sample
                 
+           
                 # Loss calculation
                 loss = F.mse_loss(model_pred, noise)
                 
                 # Backward pass
                 accelerator.backward(loss)
-                
+
                 # Gradient clipping for stability
                 if accelerator.sync_gradients:
                     # Clip gradients for both UNet and text encoder
@@ -489,6 +493,13 @@ def train(dataset_csv="./dataset/dataset.csv", experiment_name="experiment_defau
         
         avg_loss = epoch_loss / len(dataloader)
         current_lr = lr_scheduler.get_last_lr()[0]
+        
+        # Optuna pruning: report intermediate result and check if trial should be pruned
+        if trial is not None:
+            trial.report(avg_loss, epoch + 1)
+            if trial.should_prune():
+                raise TrialPruned()
+        
         print(f"[EPOCH {epoch + 1:2d}] Complete. Average loss: {avg_loss:.4f} | LR: {current_lr:.2e}")
         
         # VRAM report
@@ -528,6 +539,11 @@ def train(dataset_csv="./dataset/dataset.csv", experiment_name="experiment_defau
     print(f"    LoRA weights saved to: {lora_output_dir}")
     print(f"    Best loss: {best_loss:.4f}")
     print("=" * 60)
+    
+    # Clean up VRAM before returning
+    del unet, vae, text_encoder, optimizer, dataloader, lr_scheduler
+    torch.cuda.empty_cache()
+    gc.collect()
     
     return best_loss
 
@@ -583,7 +599,8 @@ def main():
         duplicate=args.duplicate,
         weight_decay=args.weight_decay,
         warmup_ratio=args.warmup_ratio,
-        lora_dropout=args.lora_dropout
+        lora_dropout=args.lora_dropout,
+        trial=None  # No Optuna trial in main run
     )
     
 if __name__ == "__main__":
