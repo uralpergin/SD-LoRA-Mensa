@@ -502,6 +502,10 @@ def train(dataset_csv="./dataset/dataset.csv", experiment_name="experiment_defau
         
         print(f"[EPOCH {epoch + 1:2d}] Complete. Average loss: {avg_loss:.4f} | LR: {current_lr:.2e}")
         
+        # Aggressive VRAM cleanup after each epoch for longer training
+        torch.cuda.empty_cache()
+        gc.collect()
+        
         # VRAM report
         if torch.cuda.is_available():
             used_memory = torch.cuda.memory_reserved() / 1024**3
@@ -540,10 +544,22 @@ def train(dataset_csv="./dataset/dataset.csv", experiment_name="experiment_defau
     print(f"    Best loss: {best_loss:.4f}")
     print("=" * 60)
     
-    # Clean up VRAM before returning
-    del unet, vae, text_encoder, optimizer, dataloader, lr_scheduler
-    torch.cuda.empty_cache()
-    gc.collect()
+    # Thorough cleanup for hyperparameter search
+    try:
+        accelerator.wait_for_everyone()
+        # Delete models and training objects
+        del unet, vae, text_encoder, optimizer, dataloader, lr_scheduler, accelerator
+        # Force garbage collection and VRAM cleanup
+        torch.cuda.empty_cache()
+        gc.collect()
+        # Additional VRAM cleanup
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
+            torch.cuda.empty_cache()
+    except Exception as e:
+        print(f"[WARNING] Cleanup warning: {e}")
+        torch.cuda.empty_cache()
+        gc.collect()
     
     return best_loss
 
