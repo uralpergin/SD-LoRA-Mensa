@@ -62,11 +62,7 @@ def objective(trial):
         print(f"[ERROR] Trial {trial.number} crashed: {e}")
         raise optuna.TrialPruned()
     finally:
-        # delete everything that holds GPU memory
-        for name in ("unet","vae","text_encoder","optimizer",
-                    "dataloader","lr_scheduler","accelerator"):
-            if name in locals():
-                del locals()[name]
+        # Clean up VRAM after each trial
         torch.cuda.empty_cache()
         gc.collect()
 
