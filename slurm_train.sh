@@ -58,11 +58,11 @@ source "$VENV/bin/activate"
 
 # Install all dependencies (will skip if already installed)
 echo "[DEPS] Installing dependencies..."
-pip install --upgrade pip
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-pip install transformers diffusers accelerate peft datasets
-pip install 'numpy<2' scipy pandas scikit-learn matplotlib seaborn
-pip install optuna plotly joblib kaleido Pillow tqdm
+#pip install --upgrade --quiet pip
+#pip install --quiet torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+#pip install --quiet transformers diffusers accelerate peft datasets
+#pip install --quiet 'numpy<2' scipy pandas scikit-learn matplotlib seaborn
+#pip install --quiet optuna plotly joblib kaleido Pillow tqdm
 
 echo "[DEPS] Setup complete!"
 
@@ -100,55 +100,67 @@ echo "[OK] Training complete!"
 echo "[INFER] Starting inference tests..."
 
 echo "[INFER] Generating Steak image..."
-python3 inferance.py \
-    --experiment_name "$EXPERIMENT_NAME" \
-    --prompt "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas" \
-    --steps 60 \
-    --guidance 3.5 || echo "[!] Steak inference failed, continuing..."
 
 python3 inferance.py \
     --experiment_name "$EXPERIMENT_NAME" \
     --prompt "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas" \
     --steps 60 \
-    --guidance 5.5 || echo "[!] Steak inference failed, continuing..."
+    --guidance 3.5 \
+    --num_images 5 || echo "[!] Steak inference failed, continuing..."
 
 python3 inferance.py \
     --experiment_name "$EXPERIMENT_NAME" \
     --prompt "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas" \
     --steps 60 \
-    --guidance 7.5 || echo "[!] Steak inference failed, continuing..."
+    --guidance 7.5 \
+    --num_images 5 || echo "[!] Steak inference failed, continuing..."
+
+echo "[INFER] Generating Asparagus image..."
 
 python3 inferance.py \
     --experiment_name "$EXPERIMENT_NAME" \
-    --prompt "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas" \
+    --prompt "Asparagus in white sauce sauteed potatoes" \
     --steps 60 \
-    --guidance 10 || echo "[!] Steak inference failed, continuing..."
-
-echo "[INFER] Generating Potato Pancakes image..."
-
-python3 inferance.py \
-    --experiment_name "$EXPERIMENT_NAME" \
-    --prompt "Vegetable gnocchi with pink sauce and cheese topping" \
-    --steps 60 \
-    --guidance 3.5 || echo "[!] Potato Pancakes inference failed, continuing..."
+    --guidance 3.5 \
+    --num_images 5 || echo "[!] Asparagus inference failed, continuing..."
 
 python3 inferance.py \
     --experiment_name "$EXPERIMENT_NAME" \
-    --prompt "Potato pancakes with peas, guacamole and herbs yogurt dip" \
+    --prompt "Asparagus in white sauce sauteed potatoes" \
     --steps 60 \
-    --guidance 5 || echo "[!] Potato Pancakes inference failed, continuing..."
+    --guidance 7.5 \
+    --num_images 5 || echo "[!] Asparagus inference failed, continuing..."
+
+echo "[INFER] Generating Ravioli image..."
 
 python3 inferance.py \
     --experiment_name "$EXPERIMENT_NAME" \
-    --prompt "Potato pancakes with peas, guacamole and herbs yogurt dip" \
+    --prompt "Ravioli with herb pesto on tomato lentil stew" \
     --steps 60 \
-    --guidance 7.5 || echo "[!] Potato Pancakes inference failed, continuing..."
+    --guidance 3.5 || echo "[!] Ravioli inference failed, continuing..."
 
 python3 inferance.py \
     --experiment_name "$EXPERIMENT_NAME" \
-    --prompt "Potato pancakes with peas, guacamole and herbs yogurt dip" \
+    --prompt "Ravioli with herb pesto on tomato lentil stew" \
     --steps 60 \
-    --guidance 10 || echo "[!] Potato Pancakes inference failed, continuing..."
+    --guidance 7.5 \
+    --num_images 5 || echo "[!] Ravioli inference failed, continuing..."
+
+echo "[INFER] Generating Spätzle image..."
+
+python3 inferance.py \
+    --experiment_name "$EXPERIMENT_NAME" \
+    --prompt "Spätzle with beef goulash and sauteed green beans" \
+    --steps 60 \
+    --guidance 3.5 \
+    --num_images 5 || echo "[!] Spätzle inference failed, continuing..."
+
+python3 inferance.py \
+    --experiment_name "$EXPERIMENT_NAME" \
+    --prompt "Spätzle with beef goulash and sauteed green beans" \
+    --steps 60 \
+    --guidance 7.5 \
+    --num_images 5 || echo "[!] Spätzle inference failed, continuing..."
 
 echo "[OK] Inference complete!"
 
