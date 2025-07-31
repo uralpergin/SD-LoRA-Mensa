@@ -102,7 +102,7 @@ def load_pipeline_with_lora(lora_weights_path, concept_token="<mensafood>"):
         if text_lora_path.exists():
             # Setup PEFT
             peft_cfg = LoraConfig(
-                r=16, lora_alpha=32,
+                r=4, lora_alpha=64,
                 target_modules=["q_proj", "k_proj", "v_proj", "out_proj"],
                 bias="none", lora_dropout=0.0
             )
