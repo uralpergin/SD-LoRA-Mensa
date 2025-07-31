@@ -12,6 +12,8 @@ import torch
 import gc
 import sys
 import os
+import multiprocessing as mp
+mp.set_start_method("spawn", force=True)
 
 # Import the train function from lora_train
 sys.path.append('.')
@@ -22,15 +24,22 @@ def objective(trial):
     """Optuna objective function for hyperparameter optimization"""
     
     # Sample hyperparameters
-    learning_rate = trial.suggest_float('learning_rate', 1e-6, 1e-3, log=True)
-    lora_r = trial.suggest_categorical('lora_r', [2, 4, 8, 16, 32])
-    lora_alpha = trial.suggest_categorical('lora_alpha', [8, 16, 32, 48, 64, 96])
-    weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-2, log=True)
-    warmup_ratio = trial.suggest_float("warmup_ratio", 0.0, 0.3)
-    lora_dropout = trial.suggest_float("lora_dropout", 0.0, 0.3)
+    learning_rate = trial.suggest_float("learning_rate", 1e-6, 1e-4, log=True)
+    lora_r        = trial.suggest_categorical("lora_r", [2, 4, 8, 16])
+    lora_alpha    = trial.suggest_categorical("lora_alpha", [16, 32, 48, 64])
+    #weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-2, log=True)
+    #warmup_ratio = trial.suggest_float("warmup_ratio", 0.0, 0.3)
+    #lora_dropout = trial.suggest_float("lora_dropout", 0.0, 0.3)
+    learning_rate = 1e-4  # Fixed learning rate for stability
+    lora_r = 4  # Fixed LoRA rank for simplicity
+    lora_alpha = 64  # Fixed LoRA alpha for simplicity
+    weight_decay = 0.001
+    warmup_ratio = 0.2
+    lora_dropout = 0.1
+
     
     # Create experiment name under hyperparameter search folder
-    experiment_name = f"hyperparameter_search_new_data/trial_{trial.number}"
+    experiment_name = f"hyperparameter_search_focus/trial_{trial.number}"
     
     try:
         # Call train function with sampled hyperparameters
@@ -75,6 +84,7 @@ def main():
     parser.add_argument('--epochs', type=int, default=50, help='Number of training epochs')
     parser.add_argument('--batch_size', type=int, default=6, help='Training batch size')
     parser.add_argument('--n_trials', type=int, default=30, help='Number of trials')
+    parser.add_argument('--name', type=str, default='mensa_lora_hpo1', help='Name of the hyperparameter search')
     
     args = parser.parse_args()
     
@@ -98,7 +108,7 @@ def main():
     # Create study with persistent storage
     study = optuna.create_study(
         storage="sqlite:///optuna_mensa.db",
-        study_name="mensa_lora_bohb",
+        study_name=args.name, 
         load_if_exists=True,
         direction="minimize",
         sampler=sampler,
@@ -118,8 +128,11 @@ def main():
 
     # Save study and generate reports
     os.makedirs("logs", exist_ok=True)
-    joblib.dump(study, "logs/optuna_study.pkl")
-    print("[LOG] Study saved to logs/optuna_study.pkl")
+    os.makedirs("hpo_results", exist_ok=True)
+    hpo_run_name = f"hpo_run_{args.name}"
+    os.makedirs(f"hpo_results/{hpo_run_name}", exist_ok=True)
+    joblib.dump(study, f"hpo_results/{hpo_run_name}/{hpo_run_name}_optuna_study.pkl")
+    print(f"[LOG] Study saved to hpo_results/{hpo_run_name}/{hpo_run_name}_optuna_study.pkl")
 
     # Print results
     print("-" * 60)
@@ -133,12 +146,12 @@ def main():
     
     # Generate interactive Plotly reports
     opt_history_fig = plot_optimization_history(study)
-    opt_history_fig.write_html("logs/optimization_history.html")
-    print("[LOG] Optimization history saved to logs/optimization_history.html")
-    
+    opt_history_fig.write_html(f"hpo_results/{hpo_run_name}/optimization_history.html")
+    print(f"[LOG] Optimization history saved to hpo_results/{hpo_run_name}/optimization_history.html")
+
     param_importance_fig = plot_param_importances(study)
-    param_importance_fig.write_html("logs/param_importances.html")
-    print("[LOG] Parameter importances saved to logs/param_importances.html") 
+    param_importance_fig.write_html(f"hpo_results/{hpo_run_name}/param_importances.html")
+    print(f"[LOG] Parameter importances saved to hpo_results/{hpo_run_name}/param_importances.html")
 
 if __name__ == "__main__":
     main()

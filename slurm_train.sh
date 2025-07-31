@@ -38,25 +38,38 @@ echo "[GPU] Checking GPU stability..."
 nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits || echo "[WARNING] GPU query failed, but continuing"
 
 echo "[CUDA] Setting up CUDA environment..."
-# Clear any existing GPU cache
-if command -v nvidia-smi &>/dev/null; then
-    echo "[CUDA] Clearing GPU cache"
-    cuda-empty-cache &>/dev/null || echo "[WARNING] Could not clear CUDA cache"
-fi
-
 export CUDA_VISIBLE_DEVICES=0
 export CUDA_LAUNCH_BLOCKING=1 # To see CUDA errors, delete for full power
 source /etc/cuda_env
 cuda12.6
 echo "[CUDA] CUDA_HOME: $CUDA_HOME"
 
-echo "[DEPS] Installing remaining dependencies for LoRA training..."
-# Silence pip
-export PIP_DISABLE_PIP_VERSION_CHECK=1
-pip3 install --user --disable-pip-version-check --quiet peft accelerate datasets \
-  > /dev/null 2>&1
+# ——— Setup virtualenv and install dependencies ———
+VENV=~/venvs/mensa
+echo "[VENV] Setting up virtual environment..."
 
-cd /work/dlclarge2/ceylanb-dl_lab_project/mensa-lora
+# Create venv if it doesn't exist
+if [ ! -d "$VENV" ]; then
+  python3 -m venv "$VENV"
+fi
+
+# Activate venv
+source "$VENV/bin/activate"
+
+# Install all dependencies (will skip if already installed)
+echo "[DEPS] Installing dependencies..."
+pip install --upgrade pip
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+pip install transformers diffusers accelerate peft datasets
+pip install 'numpy<2' scipy pandas scikit-learn matplotlib seaborn
+pip install optuna plotly joblib kaleido Pillow tqdm
+
+echo "[DEPS] Setup complete!"
+
+# Verify installation
+python -c "import torch; print(f'PyTorch {torch.__version__} - CUDA: {torch.cuda.is_available()}')"
+
+cd /work/dlclarge2/ceylanb-DL_Lab_Project/mensa-lora
 
 # Check GPU memory before training
 if command -v nvidia-smi &>/dev/null; then
@@ -70,12 +83,15 @@ python3 lora_train.py \
     --experiment_name "$EXPERIMENT_NAME" \
     --epochs 50 \
     --batch_size 6 \
-    --learning_rate 5e-5 \
-    --lora_r 8 \
-    --lora_alpha 32 \
+    --learning_rate 6.218704727769077e-05 \
+    --lora_r 4 \
+    --lora_alpha 64 \
     --save_steps 5 \
     --concept_token "<mensafood>" \
-    --duplicate 1
+    --duplicate 1 \
+    --weight_decay 0.001 \
+    --warmup_ratio 0.2 \
+    --lora_dropout 0.1
 
 
 echo "[OK] Training complete!"
