@@ -433,6 +433,9 @@ def train(dataset_csv="./dataset/dataset.csv", experiment_name="experiment_defau
         param_group['initial_lr'] = learning_rate
         param_group['lr'] = learning_rate
     
+    # Saving loss
+    history = {"step_loss": [], "epoch_loss": []}
+
     for epoch in range(epochs):
         epoch_loss = 0
         progress_bar = tqdm(dataloader, desc=f"Epoch {epoch + 1}/{epochs}")
@@ -464,7 +467,8 @@ def train(dataset_csv="./dataset/dataset.csv", experiment_name="experiment_defau
            
                 # Loss calculation
                 loss = F.mse_loss(model_pred, noise)
-                
+                history["step_loss"].append(loss.item())     
+
                 # Backward pass
                 accelerator.backward(loss)
 
@@ -492,6 +496,7 @@ def train(dataset_csv="./dataset/dataset.csv", experiment_name="experiment_defau
                     torch.cuda.empty_cache()
         
         avg_loss = epoch_loss / len(dataloader)
+        history["epoch_loss"].append(avg_loss)
         current_lr = lr_scheduler.get_last_lr()[0]
         
         # Optuna pruning: report intermediate result and check if trial should be pruned
@@ -530,6 +535,13 @@ def train(dataset_csv="./dataset/dataset.csv", experiment_name="experiment_defau
             )
             print(f"[SAVE] Checkpoint saved at epoch {epoch + 1}")
     
+    # Save loss
+    import json, pathlib
+    out = pathlib.Path(lora_output_dir) / "loss_history.json"
+    with open(out, "w") as f:
+        json.dump(history, f, indent=2)
+    print(f"[OK] Loss history written to {out}")
+
     # Final save
     accelerator.wait_for_everyone()
     save_lora_and_embedding(
