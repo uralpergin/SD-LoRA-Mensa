@@ -47,5 +47,5 @@ python clip_score.py \
 **token-emb** is the path to token_emb.pt saved under _/experiments/**exp-name**/lora_weights/best/_ <br>
 **exp-name** is the folder name containig _lora_weights/_ and _outputs/_ folders. <br>
 **token-name** is the concept token used for retraining. <br>
-
+The scores into clip_score.csv file under _eval/_ folder.
 For vanilla SD, use base model token embedding, for "no_token" experiment, simply remove **token-emb** and **token-name** arguments.
