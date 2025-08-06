@@ -82,7 +82,7 @@ print(f"[DEPS] PyTorch {torch.__version__}  CUDA available: {torch.cuda.is_avail
 PY
 
 # ---------------- Repository root ---------------
-cd /work/dlclarge2/matusd-lora/mensa-lora
+cd /work/dlclarge2/matusd-test/SD-LoRA-Mensa
 
 # ---------------- Inference ---------------------
 INFER_SCRIPT="src/infer_vanilla_sd.py"   
