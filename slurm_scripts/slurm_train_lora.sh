@@ -13,7 +13,7 @@ echo "[NODE] Node : $(hostname)"
 
 # ---------------- Configuration ----------------
 EXPERIMENT_NAME="${1:-experiment_default}"
-ROOT_DIR="/work/dlclarge2/matusd-lora/mensa-lora" #TODO: change to correct path
+ROOT_DIR="/work/dlclarge2/matusd-lora/mensa-lora" # TODO: change to correct path
 LOG_DIR="${ROOT_DIR}/logs/${EXPERIMENT_NAME}"
 FID_DIR="${ROOT_DIR}/fid_original_images"
 
@@ -76,10 +76,10 @@ if command -v nvidia-smi &>/dev/null; then
     nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits || echo "[WARNING] Could not check GPU memory"
 fi
 
-python3 train_lora.py \
+python3 src/train_lora.py \
     --dataset_csv ./dataset/dataset.csv \
     --experiment_name "$EXPERIMENT_NAME" \
-    --epochs 50 \
+    --epochs 2 \
     --batch_size 6 \
     --learning_rate 6.218704727769077e-05 \
     --lora_r 4 \
@@ -107,7 +107,7 @@ if [[ $RUN_INFER -eq 1 ]]; then
   for PROMPT in "${PROMPTS[@]}"; do
       echo "[INFER] Generating: $PROMPT"
       for GUIDANCE in 3.5 7.5; do
-          python3 infer_lora.py \
+          python3 src/infer_lora.py \
               --experiment_name "$EXPERIMENT_NAME" \
               --prompt "$PROMPT" \
               --steps 60 \

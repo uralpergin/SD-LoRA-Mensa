@@ -16,7 +16,7 @@ CHANGES (2025‑08‑03)
 Example
 ~~~~~~~
 ```bash
-python clip_score.py --token-emb /work/dlclarge2/matusd-lora/mensa-lora/experiments/base/lora_weights/final/token_emb.pt 
+python src/clip_score.py --token-emb /work/dlclarge2/matusd-lora/mensa-lora/experiments/base/lora_weights/final/token_emb.pt 
 --experiment /work/dlclarge2/matusd-lora/mensa-lora/experiments/base 
 --token-name "<mensafood>" 
 """

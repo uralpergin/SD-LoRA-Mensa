@@ -47,7 +47,7 @@ echo "[DEPS] Setup complete!"
 cd /work/dlclarge2/ceylanb-DL_Lab_Project/mensa-lora
 
 echo "[HYPERSEARCH] Starting hyperparameter search..."
-python3 hyper_search.py \
+python3 src/hyper_search.py \
     --dataset_csv ./dataset/dataset.csv \
     --epochs 25 \
     --batch_size 6 \

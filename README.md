@@ -9,7 +9,7 @@ unzip dataset.zip
 ## Fine-tuning with LoRA
 To retrain the SDv1.4 model with LoRA run:
 ```
-sbatch slurm_train_lora.sh <exp-name> --inference* (update ROOT_DIR)
+sbatch slurm_scripts/slurm_train_lora.sh <exp-name> --inference* (update ROOT_DIR)
 ```
 This bash script also can also run inference on the fine-tuned model with five basic prompts when given **--inference** flag.<br>
 Both model weights (_lora_weights/_) and generated images (_output/_) are saved under _experiments/**exp-name**_ folder.
@@ -17,7 +17,7 @@ Both model weights (_lora_weights/_) and generated images (_output/_) are saved 
 ## Inference
 To infer the fine-tuned model, run:
 ```
-sbatch slurm_infer_lora.sh <exp-name> <prompt> <num-imgs> (update ROOT_DIR)
+sbatch slurm_scripts/slurm_infer_lora.sh <exp-name> <prompt> <num-imgs> (update ROOT_DIR)
 ```
 
 **exp-name** is folder name under which _lora_weights/_ have been saved. <br>
@@ -26,7 +26,7 @@ sbatch slurm_infer_lora.sh <exp-name> <prompt> <num-imgs> (update ROOT_DIR)
 
 To infer vanilla SD, the baseline, run:
 ```
-sbatch slurm_infer_vanilla_sd.sh <out-dir> <prompt*> <num-imgs*> (update ROOT_DIR)
+sbatch slurm_scripts/slurm_infer_vanilla_sd.sh <out-dir> <prompt*> <num-imgs*> (update ROOT_DIR)
 ```
 **out-dir** is folder name in _/experiments_ under which _/outputs_ dir with generated images will be created.
 
@@ -39,7 +39,7 @@ conda activate clip_score
 
 Run script 
 ```
-python clip_score.py \
+python src/clip_score.py \
 --token-emb <token-emb> \ 
 --experiment <exp-name> \
 --token-name "<token-name>" 
@@ -55,7 +55,7 @@ All images should be under the indicated folder, see calculate_fid.sh.
 
 Run script
 ```
-sbatch calculate_fid.sh
+sbatch slurm_scripts/calculate_fid.sh
 ```
 
 Results will be under fid_results.txt.

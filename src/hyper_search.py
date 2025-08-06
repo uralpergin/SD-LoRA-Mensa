@@ -15,9 +15,9 @@ import os
 import multiprocessing as mp
 mp.set_start_method("spawn", force=True)
 
-# Import the train function from lora_train
+# Import the train function from train_lora
 sys.path.append('.')
-from lora_train import train
+from train_lora import train
 
 
 def objective(trial):

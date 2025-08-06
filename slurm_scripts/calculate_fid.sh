@@ -30,7 +30,7 @@ pip install --quiet torch-fidelity # make sure this is installed
 # TODO: change the path to image folders
 # Manually put the original images in the following folders:
 # asparagus, ravioli, spatzle, steak
-python3 calculate_fid.py \
+python3 src/calculate_fid.py \
   --real_dirs \
     /work/dlclarge2/erginu-dl_lab_project/mensa-lora/fid_original_images/asparagus \
     /work/dlclarge2/erginu-dl_lab_project/mensa-lora/fid_original_images/ravioli \

@@ -85,7 +85,7 @@ PY
 cd /work/dlclarge2/matusd-lora/mensa-lora
 
 # ---------------- Inference ---------------------
-INFER_SCRIPT="infer_vanilla_sd.py"   
+INFER_SCRIPT="src/infer_vanilla_sd.py"   
 
 # If a prompt override is provided, use it; otherwise use defaults.
 if [[ -n "$PROMPT_ARG" ]]; then

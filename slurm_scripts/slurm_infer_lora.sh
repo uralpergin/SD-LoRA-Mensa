@@ -84,7 +84,7 @@ echo "[INFER] Guidances : ${GUIDANCES[*]}"
 for GUIDANCE in "${GUIDANCES[@]}"; do
   echo "------------------------------------------------------------"
   echo "[INFER] Running with guidance: $GUIDANCE"
-  python3 infer_lora.py \
+  python3 src/infer_lora.py \
     --experiment_name "$EXPERIMENT_NAME" \
     --prompt "$PROMPT" \
     --steps "$STEPS" \
