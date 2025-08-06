@@ -76,3 +76,12 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Custom
+experiments/
+generated_images
+fid_original_images
+logs/
+logs2/
+dataset/
+eval/

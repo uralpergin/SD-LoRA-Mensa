@@ -58,19 +58,20 @@ class MensaTorchDataset(TorchDataset):
             "pixel_values": pixel_values
         }
 
+
 def get_train_transform(resolution):
     """Returns predefined data augmentation transforms for training"""
-    # No augmentation, just resize and normalize
     transform_set = transforms.Compose([
-        # transforms.RandomHorizontalFlip(p=0.5),
-        # transforms.RandomApply(
-        #     [transforms.ColorJitter(0.2,0.2,0.2,0.1)], p=0.3
-        # ),
+        transforms.RandomHorizontalFlip(p=0.5),
+        transforms.RandomApply(
+            [transforms.ColorJitter(0.2,0.2,0.2,0.1)], p=0.3
+        ),
         transforms.Resize((resolution, resolution)),
         transforms.ToTensor(),
         transforms.Normalize([0.5], [0.5]),
     ])
     return transform_set
+
 
 def setup_memory_optimization():
     """Setup memory optimization and get current state"""
@@ -87,6 +88,7 @@ def setup_memory_optimization():
         print(f"[INFO] CUDA Device: {device_name}")
         print(f"[INFO] Total VRAM: {total_memory:.1f} GB")
         print(f"[VRAM] Currently used: {used_memory:.2f} GB")
+
 
 def load_from_csv(csv_path, tokenizer, concept_token="<mensafood>"):
     """
@@ -131,11 +133,13 @@ def load_from_csv(csv_path, tokenizer, concept_token="<mensafood>"):
     print(f"Loaded {len(samples)} samples")
     return samples
 
+
 def save_training_config(output_dir, config):
     """Save training configuration to JSON"""
     os.makedirs(output_dir, exist_ok=True)
     with open(os.path.join(output_dir, 'training_config.json'), 'w') as f:
         json.dump(config, f, indent=2)
+
 
 def save_lora_and_embedding(output_dir, unet, text_encoder, tokenizer, concept_token, accelerator):
     """Save LoRA weights in diffusers/PEFT format and concept token embedding"""
@@ -193,6 +197,7 @@ def save_lora_and_embedding(output_dir, unet, text_encoder, tokenizer, concept_t
     tokenizer.save_pretrained(output_path / "tokenizer")
     
     return output_path
+
 
 def train(dataset_csv="./dataset/dataset.csv", experiment_name="experiment_default", 
           pretrained_model="CompVis/stable-diffusion-v1-4", resolution=512, batch_size=6, 

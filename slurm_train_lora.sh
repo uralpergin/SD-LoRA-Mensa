@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --job-name=lora-no-aug
-#SBATCH --partition=mlhiwidlc_gpu-rtx2080
+#SBATCH --job-name=lora
+#SBATCH --partition=dllabdlc_gpu-rtx2080
 #SBATCH --gres=gpu:1
 #SBATCH --mem=10G
-#SBATCH --time=30:00
+#SBATCH --time=5:30:00
 
 echo "============================================================"
 echo "              MENSA LORA TRAINING JOB"
@@ -13,7 +13,7 @@ echo "[NODE] Node : $(hostname)"
 
 # ---------------- Configuration ----------------
 EXPERIMENT_NAME="${1:-experiment_default}"
-ROOT_DIR="/work/dlclarge2/matusd-lora/mensa-lora"
+ROOT_DIR="/work/dlclarge2/matusd-lora/mensa-lora" #TODO: change to correct path
 LOG_DIR="${ROOT_DIR}/logs/${EXPERIMENT_NAME}"
 FID_DIR="${ROOT_DIR}/fid_original_images"
 
@@ -27,6 +27,15 @@ echo "[LOG] Directory  : ${LOG_DIR}/"
 echo "[OUT] Stdout log : ${LOG_DIR}/train_${SLURM_JOB_ID}.out"
 echo "[ERR] Stderr log : ${LOG_DIR}/train_${SLURM_JOB_ID}.err"
 
+# ---------------- Inference flag (last argument) ------------
+ARGC=$#
+LAST_ARG="${!#}"
+RUN_INFER=0  # default: skip inference
+if [[ $ARGC -ge 2 && "$LAST_ARG" == "--inference" ]]; then
+  RUN_INFER=1
+fi
+echo "[CFG] Inference after training: $([[ $RUN_INFER -eq 1 ]] && echo ENABLED || echo DISABLED)"
+
 # ---------------- GPU Info ----------------
 echo "[GPU] GPU Information:"
 nvidia-smi || echo "[WARNING] nvidia-smi command failed"
@@ -37,7 +46,7 @@ nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits || echo "[WARNI
 # ---------------- CUDA Environment ----------------
 echo "[CUDA] Setting up CUDA environment..."
 export CUDA_VISIBLE_DEVICES=0
-export CUDA_LAUNCH_BLOCKING=1  
+export CUDA_LAUNCH_BLOCKING=1
 source /etc/cuda_env
 cuda12.6
 echo "[CUDA] CUDA_HOME: $CUDA_HOME"
@@ -60,7 +69,7 @@ echo "[DEPS] Setup complete!"
 python -c "import torch; print(f'PyTorch {torch.__version__} - CUDA: {torch.cuda.is_available()}')"
 
 # ---------------- Training ----------------
-cd $ROOT_DIR
+cd "$ROOT_DIR" || { echo "[!] Could not cd to $ROOT_DIR"; exit 1; }
 
 if command -v nvidia-smi &>/dev/null; then
     echo "[MEMORY] Available GPU memory before training:"
@@ -70,7 +79,7 @@ fi
 python3 train_lora.py \
     --dataset_csv ./dataset/dataset.csv \
     --experiment_name "$EXPERIMENT_NAME" \
-    --epochs 1 \
+    --epochs 50 \
     --batch_size 6 \
     --learning_rate 6.218704727769077e-05 \
     --lora_r 4 \
@@ -84,30 +93,37 @@ python3 train_lora.py \
 
 echo "[OK] Training complete!"
 
-# ---------------- Inference ----------------
-echo "[INFER] Starting inference tests..."
+# ---------------- Optional Inference ----------------
+if [[ $RUN_INFER -eq 1 ]]; then
+  echo "[INFER] Starting inference tests..."
 
-declare -a PROMPTS=(
-    "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas"
-    "Asparagus in white sauce sauteed potatoes"
-    "Ravioli with herb pesto on tomato lentil stew"
-    "Spätzle with beef goulash and sauteed green beans"
-)
+  declare -a PROMPTS=(
+      "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas"
+      "Asparagus in white sauce sauteed potatoes"
+      "Ravioli with herb pesto on tomato lentil stew"
+      "Spätzle with beef goulash and sauteed green beans"
+  )
 
-for PROMPT in "${PROMPTS[@]}"; do
-    echo "[INFER] Generating: $PROMPT"
-    for GUIDANCE in 3.5 7.5; do
-        python3 infer_lora.py \
-            --experiment_name "$EXPERIMENT_NAME" \
-            --prompt "$PROMPT" \
-            --steps 60 \
-            --guidance "$GUIDANCE" \
-            --num_images 5 || echo "[!] Inference failed for: $PROMPT (guidance=$GUIDANCE)"
-    done
-done
+  for PROMPT in "${PROMPTS[@]}"; do
+      echo "[INFER] Generating: $PROMPT"
+      for GUIDANCE in 3.5 7.5; do
+          python3 infer_lora.py \
+              --experiment_name "$EXPERIMENT_NAME" \
+              --prompt "$PROMPT" \
+              --steps 60 \
+              --guidance "$GUIDANCE" \
+              --num_images 5 || echo "[!] Inference failed for: $PROMPT (guidance=$GUIDANCE)"
+      done
+  done
 
-echo "[OK] Inference complete!"
-echo "============================================================"
-echo "[RESULT] Generated images in ./experiments/$EXPERIMENT_NAME/outputs/"
-echo "[RESULT] LoRA weights in ./experiments/$EXPERIMENT_NAME/lora_weights/"
-echo "============================================================"
+  echo "[OK] Inference complete!"
+  echo "============================================================"
+  echo "[RESULT] LoRA weights in ./experiments/$EXPERIMENT_NAME/lora_weights/"
+  echo "[RESULT] Generated images in ./experiments/$EXPERIMENT_NAME/outputs/"
+  echo "============================================================"
+else
+  echo "[SKIP] Inference skipped (use '--inference' to enable)."
+  echo "============================================================"
+  echo "[RESULT] LoRA weights in ./experiments/$EXPERIMENT_NAME/lora_weights/"
+  echo "============================================================"
+fi

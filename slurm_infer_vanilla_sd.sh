@@ -1,18 +1,45 @@
 #!/bin/bash
 #SBATCH --job-name=vanilla-sd
-#SBATCH --partition=testdlc_gpu-rtx2080
+#SBATCH --partition=dllabdlc_gpu-rtx2080
 #SBATCH --gres=gpu:1
-#SBATCH --mem=10G
+#SBATCH --mem=2G
 #SBATCH --time=30:00
 
 echo "============================================================"
-echo "               MENSA VANILLA SD INFERENCE JOB"
+echo "               MENSA VANILLA SD - INFERENCE                 "
 echo "============================================================"
 echo "[JOB]  Job ID : $SLURM_JOB_ID"
 echo "[NODE] Node   : $(hostname)"
 
 # ---------------- Configuration ----------------
-EXPERIMENT_NAME="${1:-vanilla_default}"          # e.g. vanilla_20250803
+EXPERIMENT_NAME="${1:-vanilla_default}"          # 1st arg: experiment name
+ARGC=$#
+LAST_ARG="${!#}"
+
+# Default num_images
+NUM_IMAGES=3
+
+# Determine if the last arg is an integer -> then it's num_images
+if [[ $ARGC -ge 2 && "$LAST_ARG" =~ ^[0-9]+$ ]]; then
+  NUM_IMAGES="$LAST_ARG"
+  # Prompt words are args 2..(last-1)
+  if (( ARGC > 2 )); then
+    PROMPT_WORDS=("${@:2:ARGC-2}")
+  else
+    PROMPT_WORDS=()
+  fi
+else
+  # Prompt words are args 2..end
+  if (( ARGC >= 2 )); then
+    PROMPT_WORDS=("${@:2}")
+  else
+    PROMPT_WORDS=()
+  fi
+fi
+
+# Join prompt words (if any) into a single string
+PROMPT_ARG="${PROMPT_WORDS[*]}"
+
 LOG_DIR="logs/${EXPERIMENT_NAME}"
 mkdir -p "${LOG_DIR}"
 
@@ -32,7 +59,7 @@ nvidia-smi || echo "[WARNING] nvidia-smi unavailable, continuing"
 
 # ---------------- CUDA setup --------------------
 export CUDA_VISIBLE_DEVICES=0
-export CUDA_LAUNCH_BLOCKING=1     # Comment out for max speed once stable
+export CUDA_LAUNCH_BLOCKING=1    
 source /etc/cuda_env
 cuda12.6
 echo "[CUDA] CUDA_HOME: $CUDA_HOME"
@@ -50,8 +77,8 @@ pip install --quiet torch torchvision torchaudio --index-url https://download.py
 pip install --quiet diffusers transformers accelerate Pillow tqdm "numpy<2"
 
 python - <<'PY'
-import torch, diffusers, PIL, sys, platform, subprocess, json, datetime
-print(f"[DEPS] PyTorch {torch.__version__}  CUDA: {torch.cuda.is_available()}")
+import torch
+print(f"[DEPS] PyTorch {torch.__version__}  CUDA available: {torch.cuda.is_available()}")
 PY
 
 # ---------------- Repository root ---------------
@@ -60,24 +87,38 @@ cd /work/dlclarge2/matusd-lora/mensa-lora
 # ---------------- Inference ---------------------
 INFER_SCRIPT="infer_vanilla_sd.py"   
 
-PROMPTS=(
-  "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas"
-  "Asparagus in white sauce sauteed potatoes"
-  "Ravioli with herb pesto on tomato lentil stew"
-  "Spätzle with beef goulash and sauteed green beans"
-)
+# If a prompt override is provided, use it; otherwise use defaults.
+if [[ -n "$PROMPT_ARG" ]]; then
+  echo "[CFG] Using single prompt from args."
+  PROMPTS=("$PROMPT_ARG")
+else
+  echo "[CFG] Using default prompt list."
+  PROMPTS=(
+    "Minced steak Bernese style with pepper, mashed potatoes, carrots and peas"
+    "Asparagus in white sauce sauteed potatoes"
+    "Ravioli with herb pesto on tomato lentil stew"
+    "Spätzle with beef goulash and sauteed green beans"
+  )
+fi
+
+STEPS=60
+GUIDANCES=(3.5 7.5)
+
+echo "[INFER] Steps       : $STEPS"
+echo "[INFER] Num images  : $NUM_IMAGES"
+echo "[INFER] Guidances   : ${GUIDANCES[*]}"
 
 for PROMPT in "${PROMPTS[@]}"; do
   echo "------------------------------------------------------------"
   echo "[INFER] Prompt: $PROMPT"
-  for GUIDANCE in 3.5 7.5; do
+  for GUIDANCE in "${GUIDANCES[@]}"; do
     echo "[INFER]  ➤ guidance=$GUIDANCE"
     python3 "$INFER_SCRIPT" \
       --experiment_name "$EXPERIMENT_NAME" \
       --prompt "$PROMPT" \
-      --steps 60 \
+      --steps "$STEPS" \
       --guidance "$GUIDANCE" \
-      --num_images 5 || echo "[!] Inference failed for '$PROMPT' (guidance=$GUIDANCE)"
+      --num_images "$NUM_IMAGES" || echo "[!] Inference failed for '$PROMPT' (guidance=$GUIDANCE)"
   done
 done
 
