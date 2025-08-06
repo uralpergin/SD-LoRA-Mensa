@@ -1,6 +1,4 @@
 """
-Inference Script for Mensa Food Generation (Vanilla Stable Diffusion without LoRA)
-
 This script generates images using only the base Stable Diffusion model without LoRA.
 """
 
@@ -53,7 +51,7 @@ def generate_image(food_description, output_path, num_inference_steps=50, guidan
     # Negative prompt same as training
     negative_prompt = "fork, knife, spoon, napkin, text, watermark, person, hand"
     
-    print(f"[PROMPT] Positive: {prompt}")
+    print(f"[PROMPT] {prompt}")
 
     print(f"[GEN] Generating image...")
     
