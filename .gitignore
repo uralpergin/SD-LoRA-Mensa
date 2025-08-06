@@ -85,3 +85,7 @@ logs/
 logs2/
 dataset/
 eval/
+basic_prompt/
+complex_prompt/
+dataset.zip
+experiments_ols/
