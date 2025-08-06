@@ -24,7 +24,7 @@ export CUDA_LAUNCH_BLOCKING=1 # To see CUDA errors, delete for full power
 source /etc/cuda_env
 cuda12.6
 
-cd /work/dlclarge2/erginu-dl_lab_project/mensa-lora # Change to your project directory
+cd /work/dlclarge2/matusd-test/SD-LoRA-Mensa # Change to your project directory
 
 pip install --quiet torch-fidelity # make sure this is installed
 # TODO: change the path to image folders

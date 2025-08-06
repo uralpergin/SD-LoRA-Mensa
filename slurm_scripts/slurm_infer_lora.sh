@@ -45,8 +45,8 @@ else
   PROMPT="Grilled eggplant with spatzle"
 fi
 
-ROOT_DIR="/work/dlclarge2/matusd-lora/mensa-lora" # TODO: change to correct path
-LOG_DIR="${ROOT_DIR}/logs2/${EXPERIMENT_NAME}"
+ROOT_DIR="/work/dlclarge2/matusd-test/SD-LoRA-Mensa" # TODO: change to correct path
+LOG_DIR="${ROOT_DIR}/logs/${EXPERIMENT_NAME}"
 mkdir -p "${LOG_DIR}"
 
 exec 1> >(tee "${LOG_DIR}/infer_${SLURM_JOB_ID}.out")

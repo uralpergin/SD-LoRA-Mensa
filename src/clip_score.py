@@ -65,15 +65,12 @@ def load_concept_embedding(path: str, token_override: Optional[str] = None):
     """Return `(token_string, 768‑d torch.Tensor)` from various checkpoint layouts."""
     ckpt = torch.load(path, map_location="cpu")
 
-    # 3‑A  Automatic1111 textual‑inversion
     if isinstance(ckpt, dict) and "string_to_param" in ckpt:
         token, emb = next(iter(ckpt["string_to_param"].items()))
 
-    # 3‑B  Diffusers native TI (dict with one key)
     elif isinstance(ckpt, dict) and len(ckpt) == 1 and isinstance(next(iter(ckpt.values())), torch.Tensor):
         token, emb = next(iter(ckpt.items()))
 
-    # 3‑C  Bare tensor – need the token name from CLI
     elif isinstance(ckpt, torch.Tensor):
         if token_override is None:
             raise ValueError(
@@ -93,7 +90,7 @@ def load_concept_embedding(path: str, token_override: Optional[str] = None):
 
 
 def add_token_to_clip(processor, model, token: str, vector: torch.Tensor):
-    """Insert `token` into tokenizer and grow CLIP's text‑embedding layer if needed."""
+    """Insert `token` into tokenizer and grow CLIP's text-embedding layer if needed."""
     tokenizer = processor.tokenizer
     new_id = tokenizer.add_tokens([token])
     if isinstance(new_id, list):  # HF ≥ 4.39 returns a list
@@ -102,17 +99,20 @@ def add_token_to_clip(processor, model, token: str, vector: torch.Tensor):
     old_emb = model.text_model.embeddings.token_embedding
     vocab_old, dim = old_emb.weight.shape
     vocab_new = len(tokenizer)
+
+    device = old_emb.weight.device
+    dtype = old_emb.weight.dtype
+
     if vocab_new > vocab_old:
-        new_emb = torch.nn.Embedding(vocab_new, dim)
+        new_emb = torch.nn.Embedding(vocab_new, dim, device=device)
         with torch.no_grad():
             new_emb.weight[:vocab_old] = old_emb.weight
             torch.nn.init.normal_(new_emb.weight[vocab_old:], std=0.02)
         model.text_model.embeddings.token_embedding = new_emb
 
     with torch.no_grad():
-        model.text_model.embeddings.token_embedding.weight[new_id] = vector.to(
-            model.text_model.embeddings.token_embedding.weight.dtype
-        )
+        vec = vector.to(device=device, dtype=model.text_model.embeddings.token_embedding.weight.dtype)
+        model.text_model.embeddings.token_embedding.weight[new_id] = vec
 
 
 @torch.no_grad()

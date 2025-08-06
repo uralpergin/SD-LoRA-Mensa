@@ -13,7 +13,7 @@ echo "[NODE] Node : $(hostname)"
 
 # ---------------- Configuration ----------------
 EXPERIMENT_NAME="${1:-experiment_default}"
-ROOT_DIR="/work/dlclarge2/matusd-lora/mensa-lora" # TODO: change to correct path
+ROOT_DIR="/work/dlclarge2/matusd-test/SD-LoRA-Mensa" # TODO: change to correct path
 LOG_DIR="${ROOT_DIR}/logs/${EXPERIMENT_NAME}"
 FID_DIR="${ROOT_DIR}/fid_original_images"
 
@@ -79,7 +79,7 @@ fi
 python3 src/train_lora.py \
     --dataset_csv ./dataset/dataset.csv \
     --experiment_name "$EXPERIMENT_NAME" \
-    --epochs 2 \
+    --epochs 50 \
     --batch_size 6 \
     --learning_rate 6.218704727769077e-05 \
     --lora_r 4 \
