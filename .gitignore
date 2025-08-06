@@ -3,6 +3,7 @@ data/
 dataset/images/
 ../data/
 dataset_old/
+dataset.zip
 
 # Experiment outputs
 experiments/*/outputs/
