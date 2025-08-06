@@ -49,3 +49,15 @@ python clip_score.py \
 **token-name** is the concept token used for retraining. <br>
 The scores into clip_score.csv file under _eval/_ folder.
 For vanilla SD, use base model token embedding, for "no_token" experiment, simply remove **token-emb** and **token-name** arguments.
+
+## FID score
+All images should be under the indicated folder, see calculate_fid.sh.
+
+Run script
+```
+sbatch calculate_fid.sh
+```
+
+Results will be under fid_results.txt.
+
+
